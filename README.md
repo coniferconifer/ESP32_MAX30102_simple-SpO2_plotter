@@ -32,8 +32,11 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
   Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
-  red = particleSensor.getFIFOIR();
-  ir = particleSensor.getFIFORed();
+  
+```C
+red = particleSensor.getFIFOIR();
+ir = particleSensor.getFIFORed();
+```
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
   correct these lines. 
   
