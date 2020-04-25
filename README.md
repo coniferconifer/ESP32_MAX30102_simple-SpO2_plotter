@@ -8,8 +8,10 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   This program should not be used for medical purposes.
   I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
+Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
 
+Fig.2 SpO2 by breath taking
 ![Fig.2 SpO2 by breath taking](stopBreath.png)
 
 ## about SpO2 and pulse oximeter
@@ -19,7 +21,7 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   Pulse oximetry was developed in 1972, by Dr.Takuo Aoyagi and Michio Kishi, bioengineers, at Nihon Kohden in Japan.
 - https://ethw.org/Takuo_Aoyagi
 
-
+Fig.3 MH-ET LIVE MAX30102 breakout board
 ![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
 
 ## Tips:
@@ -34,6 +36,8 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   ir = particleSensor.getFIFORed();
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
   correct these lines. 
+  
+Fig.4 insulating MAX30102 breakout board  
 ![Fig.4 insulating MAX30102 breakout board](insulation.jpg)
 
 
