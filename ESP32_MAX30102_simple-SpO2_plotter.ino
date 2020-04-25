@@ -1,20 +1,21 @@
 /*
-  simple SpO2 plotter for MH-ET LIVE MAX30102 breakout board and ESP32 devkit-C
+#  simple SpO2 plotter for MH-ET LIVE MAX30102 breakout board and ESP32 devkit-C
   Using Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
-  
+
   ESP32_MAX30102_simple-SpO2_plotter.ino
   by coniferconifer Copyright 2020
   LICENSED under Apache License 2.0
+
+  Version 1.0
   
- 
   Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   No display hardware is required.
   This program should not be used for medical purposes.
   I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
   Pulse oximetry was developed in 1972, by Takuo Aoyagi and Michio Kishi,
-  bioengineers, at Nihon Kohden.
+  bioengineers, at Nihon Kohden in Japan.
   https://ethw.org/Takuo_Aoyagi
 
   Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
@@ -23,15 +24,15 @@
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
   correct these lines.
 
-Tips:
+## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
-  // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNo;tes/00001525B_JP.pdf
+  // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
-Instructions:
+## Instructions:
   0) Install Sparkfun's MAX3010X library
   1) Load code onto ESP32 with MH-ET LIVE MAX30102 board
-  2) put MAX30102 board in plastic bag and insulates from your finger.
+  2) Put MAX30102 board in plastic bag and insulates from your finger.
      and attach sensor to your finger tip
   3) Run this program by pressing reset botton on ESP32
   4) Wait for 3 seconds and Open Arduino IDE Tools->'Serial Plotter'
@@ -39,24 +40,24 @@ Instructions:
   5) Search the best position and presure for the sensor by watching
      the blips on Arduino's serial plotter
      I recommend to place LED under the backside of nail and wrap you
-     finger and the senser by rubber band softly.
+     finger and the sensor by rubber band softly.
 
   5) Checkout the SpO2 and blips by seeing serial Plotter
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
-  Hardware Connections (Breakoutboard to ESP32 Arduino):
+## Hardware Connections (Breakoutboard to ESP32 Arduino):
   -VIN = 3.3V
   -GND = GND
   -SDA = 21 (or SDA)
   -SCL = 22 (or SCL)
   -INT = Not connected
 
-  Trouble Shooting:
-  Make sure to solder jumber on 3V3 side. 
+## Trouble Shooting:
+  Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.
   says "MAX30102 was not found. Please check wiring/power."
 
-  
+
 */
 
 #include <Wire.h>
@@ -140,7 +141,7 @@ void loop()
     if ((i % Num) == 0) {
       double R = (sqrt(sumredrms) / avered) / (sqrt(sumirrms) / aveir);
       // Serial.println(R);
-      SpO2 = -23.3 * (R - 0.4) + 100; //http://ww1.microchip.com/downloads/jp/AppNo;tes/00001525B_JP.pdf
+      SpO2 = -23.3 * (R - 0.4) + 100; //http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
       ESpO2 = FSpO2 * ESpO2 + (1.0 - FSpO2) * SpO2;//low pass filter
       //  Serial.print(SpO2);Serial.print(",");Serial.println(ESpO2);
       sumredrms = 0.0; sumirrms = 0.0; i = 0;
@@ -179,14 +180,14 @@ void loop()
         Serial.print(","); Serial.print(85.0); //
         Serial.print(","); Serial.print(90.0); //warning SpO2 line
         Serial.print(","); Serial.print(95.0); //safe SpO2 line
-        Serial.print(","); Serial.printn(100.0); //max SpO2 line
+        Serial.print(","); Serial.println(100.0); //max SpO2 line
         //#endif
       }
     }
     if ((i % Num) == 0) {
       double R = (sqrt(sumredrms) / avered) / (sqrt(sumirrms) / aveir);
       // Serial.println(R);
-      SpO2 = -23.3 * (R - 0.4) + 100; //http://ww1.microchip.com/downloads/jp/AppNo;tes/00001525B_JP.pdf
+      SpO2 = -23.3 * (R - 0.4) + 100; //http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
       ESpO2 = FSpO2 * ESpO2 + (1.0 - FSpO2) * SpO2;
       //  Serial.print(SpO2);Serial.print(",");Serial.println(ESpO2);
       sumredrms = 0.0; sumirrms = 0.0; i = 0;
