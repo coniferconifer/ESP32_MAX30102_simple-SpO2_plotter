@@ -8,24 +8,25 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   This program should not be used for medical purposes.
   I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
-![Fig.1 SpO2 at boot time](fingerOffOn.jpg)
+![Fig.1 SpO2 at boot time](fingerOffOn.png)
 
-![Fig.2 SpO2 by breath taking](stopBreath.jpg)
+![Fig.2 SpO2 by breath taking](stopBreath.png)
 
 ## about SpO2 and pulse oximeter
   Peripheral oxygen saturation (SpO2) is an estimation of the oxygen saturation level usually measured with a pulse oximeter device.
-  https://en.wikipedia.org/wiki/Oxygen_saturation_(medicine)
-  https://en.wikipedia.org/wiki/Pulse_oximetry
-  Pulse oximetry was developed in 1972, by Dr.Takuo Aoyagi and Michio Kishi,
-  bioengineers, at Nihon Kohden in Japan.
-  https://ethw.org/Takuo_Aoyagi
+- https://en.wikipedia.org/wiki/Oxygen_saturation_(medicine)
+- https://en.wikipedia.org/wiki/Pulse_oximetry
+  Pulse oximetry was developed in 1972, by Dr.Takuo Aoyagi and Michio Kishi, bioengineers, at Nihon Kohden in Japan.
+- https://ethw.org/Takuo_Aoyagi
 
 
-![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET LIVE MAX30102.jpg)
+![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
 
 ## Tips:
   SpO2 is calicurated as R=((square root means of RED/ RED average )/((square root means of IR)/IR average))
+  
   SpO2 = -23.3 * (R - 0.4) + 100;
+  
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
   Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
