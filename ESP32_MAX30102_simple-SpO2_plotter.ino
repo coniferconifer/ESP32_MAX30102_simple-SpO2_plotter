@@ -72,7 +72,7 @@ void setup()
   // Initialize sensor
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
   {
-    Serial.println("MAX30102 was not found. Please check wiring/power. ");
+    Serial.println("MAX30102 was not found. Please check wiring/power/solder jumper at MH-ET LIVE MAX30102 board. ");
     while (1);
   }
 
@@ -90,14 +90,15 @@ void setup()
 double avered = 0; double aveir = 0;
 double sumirrms = 0;
 double sumredrms = 0;
-long i = 0;
-long Num = 100;//calicurate SpO2 by this sampling interval
+int i = 0;
+int Num = 100;//calicurate SpO2 by this sampling interval
 
 double ESpO2 = 95.0;//initial value of estimated SpO2
 double FSpO2 = 0.7; //filter factor for estimated SpO2
 double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
-#define TIMETOBOOT 3000
-#define SCALE 88.0
+#define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
+#define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
+#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
 void loop()
 {
 
@@ -118,7 +119,7 @@ void loop()
     aveir = aveir * frate + (double)ir * (1.0 - frate); //average IR level by low pass filter
     sumredrms += (fred - avered) * (fred - avered); //square sum of alternate component of red level
     sumirrms += (fir - aveir) * (fir - aveir);//square sum of alternate component of IR level
-    if ((i % 5) == 0) {//slow down graph plotting speed for arduino Serial plotter by thin out
+    if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by thin out
       if ( millis() > TIMETOBOOT) {
         float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
         float red_forGraph = (2.0 * fred - avered) / avered * SCALE;
@@ -163,7 +164,7 @@ void loop()
     aveir = aveir * frate + (double)ir * (1.0 - frate); //average IR level by low pass filter
     sumredrms += (fred - avered) * (fred - avered); //square sum of alternate component of red level
     sumirrms += (fir - aveir) * (fir - aveir);//square sum of alternate component of IR level
-    if ((i % 5) == 0) {//slow down graph plotting speed for arduino IDE toos menu by thin out
+    if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino IDE toos menu by thin out
       //#if 0
       if ( millis() > TIMETOBOOT) {
         float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
