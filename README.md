@@ -4,9 +4,10 @@ Using Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
 
 Shows SpO2 and the user's heart beat on Arduino's serial plotter.
-  No display hardware is required.
-  This program should not be used for medical purposes.
-  I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
+- No display hardware is required.
+- This program does not need large 32bit buffer, caliculates SpO2 on the fly.
+- This program should not be used for medical purposes !
+- I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
 Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
@@ -18,7 +19,9 @@ Fig.2 SpO2 by breath taking
   Peripheral oxygen saturation (SpO2) is an estimation of the oxygen saturation level usually measured with a pulse oximeter device.
 - https://en.wikipedia.org/wiki/Oxygen_saturation_(medicine)
 - https://en.wikipedia.org/wiki/Pulse_oximetry
+
   Pulse oximetry was developed in 1972, by Dr.Takuo Aoyagi and Michio Kishi, bioengineers, at Nihon Kohden in Japan.
+
 - https://ethw.org/Takuo_Aoyagi
 
 Fig.3 MH-ET LIVE MAX30102 breakout board
@@ -54,24 +57,28 @@ Fig.4 insulating MAX30102 breakout board
   4) Wait for 3 seconds and Open Arduino IDE Tools->'Serial Plotter'
      Make sure the drop down is set to 115200 baud
   5) Search the best position and pressure for the sensor by watching
-     the blips on Arduino's serial plotter
-     I recommend to place LED under the backside of nail and wrap you
+     the blips on Arduino's serial plotter.
+     I recommend to place LED under the backside of nail , wrap you
      finger and the sensor by rubber band softly.
 
-  5) Checkout the SpO2 and blips by seeing serial plotter
+  5) Checkout the SpO2 and blips by seeing serial plotter.
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
 ## Hardware Connections (Breakoutboard to ESP32 Arduino):
+```
   -VIN = 3.3V
   -GND = GND
   -SDA = 21 (or SDA)
   -SCL = 22 (or SCL)
   -INT = Not connected
-
+```
 ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side. 
-  if you forget this, I2C does not work and can not find MAX30102, 
-  says "MAX30102 was not found. Please check wiring/power."
+  If you forget this, I2C does not work and can not find MAX30102, 
+  says
+```
+ "MAX30102 was not found. Please check wiring/power/solder jumper."
+```
   
 ![Fig.5 3.3V solder jumper](SolderJumper.jpg)
 
