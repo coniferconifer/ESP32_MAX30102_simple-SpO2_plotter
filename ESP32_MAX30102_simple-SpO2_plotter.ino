@@ -1,5 +1,5 @@
 /*
-#  simple SpO2 plotter for MH-ET LIVE MAX30102 breakout board and ESP32 devkit-C
+  #  simple SpO2 plotter for MH-ET LIVE MAX30102 breakout board and ESP32 devkit-C
   Using Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
 
@@ -8,7 +8,7 @@
   LICENSED under Apache License 2.0
 
   Version 1.0
-  
+
   Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   No display hardware is required.
   This program should not be used for medical purposes.
@@ -18,20 +18,18 @@
   bioengineers, at Nihon Kohden in Japan.
   https://ethw.org/Takuo_Aoyagi
 
-  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped
-  when Sparkfun's library is used.
-  
+  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
   red = particleSensor.getFIFOIR();
   ir = particleSensor.getFIFORed();
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
   correct these lines.
 
-## Tips:
+  ## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
   // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
-## Instructions:
+  ## Instructions:
   0) Install Sparkfun's MAX3010X library
   1) Load code onto ESP32 with MH-ET LIVE MAX30102 board
   2) Put MAX30102 board in plastic bag and insulates from your finger.
@@ -47,14 +45,14 @@
   5) Checkout the SpO2 and blips by seeing serial Plotter
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
-## Hardware Connections (Breakoutboard to ESP32 Arduino):
+  ## Hardware Connections (Breakoutboard to ESP32 Arduino):
   -VIN = 3.3V
   -GND = GND
   -SDA = 21 (or SDA)
   -SCL = 22 (or SCL)
   -INT = Not connected
 
-## Trouble Shooting:
+  ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.
   says "MAX30102 was not found. Please check wiring/power."
@@ -101,6 +99,8 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
 #define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define FINGER_ON 30000 // if red signal is lower than this , it indicates your finger is not on the sensor
+#define MINIMUM_SPO2 80.0
 void loop()
 {
 
@@ -130,7 +130,8 @@ void loop()
         if ( ir_forGraph < 80.0) ir_forGraph = 80.0;
         if ( red_forGraph > 100.0 ) red_forGraph = 100.0;
         if ( red_forGraph < 80.0 ) red_forGraph = 80.0;
-
+        //        Serial.print(red); Serial.print(","); Serial.print(ir);Serial.print(".");
+        if (ir < FINGER_ON) ESpO2 = MINIMUM_SPO2; //indicator for finger detached
         Serial.print(ir_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(","); Serial.print(red_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(",");
@@ -176,7 +177,8 @@ void loop()
         if ( ir_forGraph < 80.0) ir_forGraph = 80.0;
         if ( red_forGraph > 100.0 ) red_forGraph = 100.0;
         if ( red_forGraph < 80.0 ) red_forGraph = 80.0;
-
+        //        Serial.print(red); Serial.print(","); Serial.print(ir);Serial.print(".");
+        if (ir < FINGER_ON) ESpO2 = MINIMUM_SPO2; //indicator for finger detached
         Serial.print((2.0 * fir - aveir) / aveir * SCALE); // to display pulse wave at the same time with SpO2 data
         Serial.print(","); Serial.print((2.0 * fred - avered) / avered * SCALE); // to display pulse wave at the same time with SpO2 data
         Serial.print(","); Serial.print(ESpO2); //low pass filtered SpO2
