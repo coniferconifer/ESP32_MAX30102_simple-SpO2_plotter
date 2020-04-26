@@ -28,14 +28,18 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
 
 ## Tips:
-  SpO2 is calicurated as R=((square root means of RED/ RED average )/((square root means of IR)/IR average))
-  
-  SpO2 = -23.3 * (R - 0.4) + 100;
-  
+- used formula
+
+  SpO2 is calicurated as 
+```  
+  R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
+  SpO2 = -23.3 * (R - 0.4) + 100
+```  
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
-  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped when Sparkfun's library is used.
-  
+- when IR signal is smaller than 30000 , then SpO2 becomes 80 to indicate your finger is not on the sensor.
+
+- Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped when Sparkfun's library is used.
 ```C
 red = particleSensor.getFIFOIR();
 ir = particleSensor.getFIFORed();
