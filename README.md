@@ -34,7 +34,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
-  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
+  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped when Sparkfun's library is used.
   
 ```C
 red = particleSensor.getFIFOIR();

@@ -18,7 +18,9 @@
   bioengineers, at Nihon Kohden in Japan.
   https://ethw.org/Takuo_Aoyagi
 
-  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
+  Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped
+  when Sparkfun's library is used.
+  
   red = particleSensor.getFIFOIR();
   ir = particleSensor.getFIFORed();
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
