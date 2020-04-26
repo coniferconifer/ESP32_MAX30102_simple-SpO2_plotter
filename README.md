@@ -97,4 +97,4 @@ Fig.4 insulating MAX30102 breakout board
   for MAX30101/MAX30102 EV Kits
   https://pdfserv.maximintegrated.com/en/an/AN6409.pdf
 
-  
+![Fig.6 IR and RED LED at MAX30102 on MH-ET LIVE](MAX30102onMH-ET_LIVE.jpg)  
