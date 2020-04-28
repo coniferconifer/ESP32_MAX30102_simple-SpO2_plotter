@@ -8,6 +8,8 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
 - This program does not need large 32bit buffer, caliculates SpO2 on the fly.
 - This program should not be used for medical purposes !
 - I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
+- ESP32 BLE version is available. 
+  https://github.com/coniferconifer/ESP32_MAX30102_simple-SpO2_plotter/tree/master/ESP32_MAX30102_simple-SpO2_plotter-BLE
 
 Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
@@ -28,7 +30,8 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
 
 ## Tips:
-- used formula
+- Used argorithm
+
   DC component of IR and RED data is calicurated by digital low pass filter and substracted from data to get AC components.
   Then, square root means of AC component of RED and IR are calicurated for every 100 samples.
   SpO2 is calicurated as 
