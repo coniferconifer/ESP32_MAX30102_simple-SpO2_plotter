@@ -29,13 +29,17 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 
 ## Tips:
 - used formula
-
+  DC component of IR and RED data is calicurated by digital low pass filter and substracted from data to get AC components.
+  Then, square root means of AC component of RED and IR are calicurated for every 100 samples.
   SpO2 is calicurated as 
 ```  
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+  
+  
+  
 
 - when IR signal is smaller than 30000 (#define FINGER_ON 30000), then SpO2 becomes 80 to indicate your finger is not on the sensor.
 
