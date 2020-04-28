@@ -52,6 +52,14 @@
   -SCL = 22 (or SCL)
   -INT = Not connected
 
+  this script also works on Arduino nao
+  ## Hardware Connections (Breakoutboard to Arduino nano): experimental
+  -VIN = 3.3V 
+  -GND = GND
+  -SDA = A4 (or SDA)
+  -SCL = A5 (or SCL)
+  -INT = Not connected
+  
   ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.

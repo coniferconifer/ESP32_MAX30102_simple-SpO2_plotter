@@ -37,7 +37,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ```  
   taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
-- when IR signal is smaller than 30000 , then SpO2 becomes 80 to indicate your finger is not on the sensor.
+- when IR signal is smaller than 30000 (#define FINGER_ON 30000), then SpO2 becomes 80 to indicate your finger is not on the sensor.
 
 - Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped when Sparkfun's library is used.
 ```C
@@ -74,6 +74,16 @@ Fig.4 insulating MAX30102 breakout board
   -GND = GND
   -SDA = 21 (or SDA)
   -SCL = 22 (or SCL)
+  -INT = Not connected
+```  
+
+## Hardware Connections (Breakoutboard to Arduino nano): 
+  this script also works on Arduino nao.(experimental)
+```
+  -VIN = 3.3V 
+  -GND = GND
+  -SDA = A4 (or SDA)
+  -SCL = A5 (or SCL)
   -INT = Not connected
 ```
 ## Trouble Shooting:
