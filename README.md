@@ -32,7 +32,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ## Tips:
 - Used argorithm
 
-  DC component of IR and RED data is calicurated by digital low pass filter and substracted from data to get AC components.
+  DC component of IR and RED data (average) is calicurated by digital low pass filter and substracted from data to get AC components.
   Then, square root means of AC component of RED and IR are calicurated for every 100 samples.
   SpO2 is calicurated as 
 ```  
