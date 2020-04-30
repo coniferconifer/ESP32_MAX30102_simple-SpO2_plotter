@@ -9,6 +9,10 @@
 Fig.1 SpO2 is displayed as HRM on nRF Toolbox for BLE
 ![Fig.1 SpO2 as HRM](BLE-SpO2.png)
 
+Fig.2 SpO2(%) and HRM(bpm) are displayed on Arduino serial plotter
+![Fig.1 SpO2 , HRM(bpm) and IR/RED signal](SpO2andHRM.png)
+
+
 ### LICENSED under Apache License 2.0
 
 ## References

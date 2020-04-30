@@ -2,7 +2,7 @@
   #  simple SpO2 plotter for MH-ET LIVE MAX30102 breakout board and ESP32 devkit-C
      SpO2 for Heart rate monitor application.
      This program sends SpO2 as a HRM of BLE standart service
-  
+
   Using Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
 
@@ -12,9 +12,13 @@
 
   Version 1.1
 
-  Shows SpO2 and the user's heart beat on Arduino's serial plotter.
-  No display hardware is required.
-  works as a BLE peripheral
+  Heart rate moniter is added.
+
+  Shows SpO2 and the user's heart beat/rate on Arduino's serial plotter.
+  No display hardware is required. 
+  works as a BLE peripheral.
+  LED blinks with blips if LED with some pull down resister is attached on LED_INDICATOR port.
+  
   This program should not be used for medical purposes.
   I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
@@ -29,6 +33,9 @@
   ir = particleSensor.getFIFORed();
   is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
   correct these lines.
+
+  ## what's new
+  - Heart rate monitor by zero crossing falling edge interval is added.
 
   ## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
@@ -73,10 +80,11 @@
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
+#define LEDINDICATOR
 #define LEDPORT 15
 #define BLE
 #ifdef BLE
-byte SpO2_data[8] = {0b00000110 , 0, 0, 0, 0 , 0, 0, 0}; //8bit SpO2 data , no extended data , defined in 0x2A37
+byte SpO2_data[8] = {0b00000110, 0, 0, 0, 0, 0, 0, 0}; //8bit SpO2 data , no extended data , defined in 0x2A37
 bool _BLEClientConnected = false;
 #define SpO2Service BLEUUID((uint16_t)0x180D)
 BLECharacteristic SpO2MeasurementCharacteristics(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
@@ -91,11 +99,11 @@ class MyServerCallbacks : public BLEServerCallbacks {
     }
 };
 /*
-
+ BLE peripheral (server) initialization
 */
 void Init_BLE_as_HeartRateMonitor() {
-  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
-  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
+//  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
+//  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
   BLEDevice::init("simple SpO2 plotter");
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();
@@ -139,31 +147,75 @@ void setup()
   Init_BLE_as_HeartRateMonitor();
 #endif
 }
+
+//
+// Heart Rate Monitor by interval of zero crossing at falling edge
+// max 180bpm - min 45bpm
+double HRM_estimator( double fir , double aveir)
+{
+  static double fbpmrate = 0.95; // low pass filter coefficient for HRM in bpm
+  static uint32_t crosstime = 0; //falling edge , zero crossing time in msec
+  static uint32_t crosstime_prev = 0;//previous falling edge , zero crossing time in msec
+  static double bpm = 60.0;
+  static double ebpm = 60.0;
+  static double eir = 0.0; //estimated lowpass filtered IR signal to find falling edge without notch
+  static double firrate = 0.85; //IR filter coefficient to remove notch , should be smaller than frate
+  static double eir_prev = 0.0;
+#define LED_PERIOD 100 // light up LED for this period in msec when zero crossing is found for filtered IR signal
+#define MAX_BPS 180 
+#define MIN_BPS 45
+
+  // Heart Rate Monitor by finding falling edge
+  eir = eir * firrate + fir * (1.0 - firrate); //estimated IR : low pass filtered IR signal
+  if ( ((eir - aveir) * (eir_prev - aveir) < 0 ) && ((eir - aveir) < 0.0)) { //find zero cross at falling edge
+    crosstime = millis();//system time in msec of falling edge
+    //Serial.print(crosstime); Serial.print(","); Serial.println(crosstime_prev);
+    if ( ((crosstime - crosstime_prev ) > (60 * 1000 / MAX_BPS)) && ((crosstime - crosstime_prev ) < (60 * 1000 / MIN_BPS)) ) {
+      bpm = 60.0 * 1000.0 / (double)(crosstime - crosstime_prev) ; //get bpm
+      //   Serial.println("crossed");
+      ebpm = ebpm * fbpmrate + (1.0 - fbpmrate) * bpm;//estimated bpm by low pass filtered
+#ifdef LEDINDICATOR
+      digitalWrite(LEDPORT, HIGH);
+#endif
+    } else {
+      //Serial.println("faild to find falling edge");
+    }
+    crosstime_prev = crosstime;
+  }
+  eir_prev = eir;
+#ifdef LEDINDICATOR
+  if (millis() > (crosstime + LED_PERIOD)) {
+    digitalWrite(LEDPORT, LOW);
+  }
+#endif
+  return (ebpm);
+}
+
 double avered = 0;
 double aveir = 0;
 double sumirrms = 0;
 double sumredrms = 0;
 int i = 0;
-int Num = 100;//calicurate SpO2 by this sampling interval
-
+#define SUM_CYCLE 100
+int Num =SUM_CYCLE ;//calicurate SpO2 by this sampling interval
 double ESpO2 = 95.0;//initial value of estimated SpO2
 double FSpO2 = 0.7; //filter factor for estimated SpO2
 double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
+
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
-#define SAMPLING 1 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
 #define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
 #define MIN_SPO2 80.0
-int counter = 0;
 void loop()
 {
-
-  uint32_t ir, red , green;
-  double fred, fir;
+  uint32_t ir, red ;//raw data
+  double fred, fir; //floating point RED ana IR raw values
   double SpO2 = 0; //raw SpO2 before low pass filtered
-
+  double Ebpm;//estimated Heart Rate (bpm)
+  
   particleSensor.check(); //Check the sensor, read up to 3 samples
 
   while (particleSensor.available()) {//do we have new data
@@ -175,9 +227,11 @@ void loop()
     avered = avered * frate + (double)red * (1.0 - frate);//average red level by low pass filter
     aveir = aveir * frate + (double)ir * (1.0 - frate); //average IR level by low pass filter
     sumredrms += (fred - avered) * (fred - avered); //square sum of alternate component of red level
-
     sumirrms += (fir - aveir) * (fir - aveir);//square sum of alternate component of IR level
-    if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by thin out
+
+    Ebpm = HRM_estimator(fir, aveir); //Ebpm is estimated BPM
+
+    if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by decimation
       if ( millis() > TIMETOBOOT) {
         float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
         float red_forGraph = (2.0 * fred - avered) / avered * SCALE;
@@ -188,6 +242,13 @@ void loop()
         if ( red_forGraph < MIN_SPO2 ) red_forGraph = MIN_SPO2;
         //        Serial.print(red); Serial.print(","); Serial.print(ir);Serial.print(".");
         if ( ir < FINGER_ON) ESpO2 = MINIMUM_SPO2; //indicator for finger detached
+
+        //Serial.print(bpm);// raw Heart Rate Monitor in bpm
+        //Serial.print(",");
+        Serial.print(Ebpm);// estimated Heart Rate Monitor in bpm
+        Serial.print(",");
+        //        Serial.print(Eir - aveir);
+        //        Serial.print(",");
         Serial.print(ir_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(","); Serial.print(red_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(",");
@@ -208,20 +269,15 @@ void loop()
 
       if ( ir < FINGER_ON) {
         ESpO2 = MINIMUM_SPO2; //indicator for finger detached
-#ifdef LEDINDICATOR
-        digitalWrite(LEDPORT, LOW);
-#endif
-      } else {
-#ifdef LEDINDICATOR
-        digitalWrite(LEDPORT, counter % 2); counter++;
-#endif
       }
+
       SpO2_data[1] = (byte)ESpO2;
+      //     SpO2_data[1] = (byte)Ebpm;
       SpO2_data[2] =  0x00;
       SpO2MeasurementCharacteristics.setValue(SpO2_data, 2);
       SpO2MeasurementCharacteristics.notify();
 #endif
-      sumredrms = 0.0; sumirrms = 0.0; i = 0;
+      sumredrms = 0.0; sumirrms = 0.0; i = 0;//reset mean square at every interval
       break;
     }
     particleSensor.nextSample(); //We're finished with this sample so move to next sample
