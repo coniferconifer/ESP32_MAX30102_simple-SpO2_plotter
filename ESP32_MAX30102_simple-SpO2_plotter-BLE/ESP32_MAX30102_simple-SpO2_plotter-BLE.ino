@@ -15,10 +15,10 @@
   Heart rate moniter is added.
 
   Shows SpO2 and the user's heart beat/rate on Arduino's serial plotter.
-  No display hardware is required. 
+  No display hardware is required.
   works as a BLE peripheral.
   LED blinks with blips if LED with some pull down resister is attached on LED_INDICATOR port.
-  
+
   This program should not be used for medical purposes.
   I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
@@ -36,6 +36,8 @@
 
   ## what's new
   - Heart rate monitor by zero crossing falling edge interval is added.
+  - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
+  - BEEP piezo speaker on GPIO_12
 
   ## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
@@ -70,7 +72,6 @@
   if you forget this, I2C does not work and can not find MAX30102.
   says "MAX30102 was not found. Please check wiring/power."
 
-
 */
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -80,8 +81,17 @@
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
-#define LEDINDICATOR
+
+#define LED_SOUND_INDICATOR
 #define LEDPORT 15
+#define SPEAKER GPIO_NUM_12
+#define BOOTSOUND 440 //Hz
+#define BLIPSOUND 440*2 //Hz A
+// beep sounder
+#define LEDC_CHANNEL_2     2
+#define LEDC_TIMER_13_BIT  13
+#define LEDC_BASE_FREQ     5000
+
 #define BLE
 #ifdef BLE
 byte SpO2_data[8] = {0b00000110, 0, 0, 0, 0, 0, 0, 0}; //8bit SpO2 data , no extended data , defined in 0x2A37
@@ -99,11 +109,11 @@ class MyServerCallbacks : public BLEServerCallbacks {
     }
 };
 /*
- BLE peripheral (server) initialization
+  BLE peripheral (server) initialization
 */
 void Init_BLE_as_HeartRateMonitor() {
-//  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
-//  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
+  //  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
+  //  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
   BLEDevice::init("simple SpO2 plotter");
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();
@@ -129,10 +139,7 @@ void setup()
     Serial.println("MAX30102 was not found. Please check wiring/power/solder jumper at MH-ET LIVE MAX30102 board. ");
     while (1);
   }
-#ifdef LEDINDICATOR
-  pinMode(LEDPORT, OUTPUT);
-  digitalWrite(LEDPORT, HIGH);
-#endif
+
   //Setup to sense a nice looking saw tooth on the plotter
   byte ledBrightness = 0x7F; //Options: 0=Off to 255=50mA
   byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
@@ -146,11 +153,31 @@ void setup()
 #ifdef BLE
   Init_BLE_as_HeartRateMonitor();
 #endif
+#ifdef LED_SOUND_INDICATOR
+  pinMode(LEDPORT, OUTPUT);
+  digitalWrite(LEDPORT, HIGH);
+
+  pinMode(SPEAKER, OUTPUT);
+  ledcSetup(LEDC_CHANNEL_2, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT) ;
+  ledcAttachPin(SPEAKER, LEDC_CHANNEL_2) ;
+  tone(BOOTSOUND); delay(500); noTone();
+#endif
 }
 
+void tone(int freq)
+{
+  ledcWriteTone(LEDC_CHANNEL_2, freq) ;
+}
+void noTone()
+{
+  ledcWriteTone(LEDC_CHANNEL_2, 0.0) ;
+}
 //
 // Heart Rate Monitor by interval of zero crossing at falling edge
 // max 180bpm - min 45bpm
+#define LED_PERIOD 100 // light up LED for this period in msec when zero crossing is found for filtered IR signal
+#define MAX_BPS 180
+#define MIN_BPS 45
 double HRM_estimator( double fir , double aveir)
 {
   static double fbpmrate = 0.95; // low pass filter coefficient for HRM in bpm
@@ -161,9 +188,7 @@ double HRM_estimator( double fir , double aveir)
   static double eir = 0.0; //estimated lowpass filtered IR signal to find falling edge without notch
   static double firrate = 0.85; //IR filter coefficient to remove notch , should be smaller than frate
   static double eir_prev = 0.0;
-#define LED_PERIOD 100 // light up LED for this period in msec when zero crossing is found for filtered IR signal
-#define MAX_BPS 180 
-#define MIN_BPS 45
+
 
   // Heart Rate Monitor by finding falling edge
   eir = eir * firrate + fir * (1.0 - firrate); //estimated IR : low pass filtered IR signal
@@ -174,8 +199,9 @@ double HRM_estimator( double fir , double aveir)
       bpm = 60.0 * 1000.0 / (double)(crosstime - crosstime_prev) ; //get bpm
       //   Serial.println("crossed");
       ebpm = ebpm * fbpmrate + (1.0 - fbpmrate) * bpm;//estimated bpm by low pass filtered
-#ifdef LEDINDICATOR
+#ifdef LED_SOUND_INDICATOR
       digitalWrite(LEDPORT, HIGH);
+      tone(BLIPSOUND);
 #endif
     } else {
       //Serial.println("faild to find falling edge");
@@ -183,9 +209,10 @@ double HRM_estimator( double fir , double aveir)
     crosstime_prev = crosstime;
   }
   eir_prev = eir;
-#ifdef LEDINDICATOR
+#ifdef LED_SOUND_INDICATOR
   if (millis() > (crosstime + LED_PERIOD)) {
     digitalWrite(LEDPORT, LOW);
+    noTone();
   }
 #endif
   return (ebpm);
@@ -197,7 +224,7 @@ double sumirrms = 0;
 double sumredrms = 0;
 int i = 0;
 #define SUM_CYCLE 100
-int Num =SUM_CYCLE ;//calicurate SpO2 by this sampling interval
+int Num = SUM_CYCLE ; //calicurate SpO2 by this sampling interval
 double ESpO2 = 95.0;//initial value of estimated SpO2
 double FSpO2 = 0.7; //filter factor for estimated SpO2
 double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
@@ -215,7 +242,7 @@ void loop()
   double fred, fir; //floating point RED ana IR raw values
   double SpO2 = 0; //raw SpO2 before low pass filtered
   double Ebpm;//estimated Heart Rate (bpm)
-  
+
   particleSensor.check(); //Check the sensor, read up to 3 samples
 
   while (particleSensor.available()) {//do we have new data
