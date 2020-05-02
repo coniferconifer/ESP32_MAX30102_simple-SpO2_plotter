@@ -43,6 +43,7 @@
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
   // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+  //                       http://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 
   ## Instructions:
   0) Install Sparkfun's MAX3010X library
@@ -73,10 +74,6 @@
   says "MAX30102 was not found. Please check wiring/power."
 
 */
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
 
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
@@ -93,10 +90,16 @@ MAX30105 particleSensor;
 #define LEDC_BASE_FREQ     5000
 
 #define BLE
+
 #ifdef BLE
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#include <BLE2902.h>
+
 byte SpO2_data[8] = {0b00000110, 0, 0, 0, 0, 0, 0, 0}; //8bit SpO2 data , no extended data , defined in 0x2A37
 bool _BLEClientConnected = false;
-#define SpO2Service BLEUUID((uint16_t)0x180D)
+#define SpO2Service BLEUUID((uint16_t)0x180D)// Heart rate monitor service 0x180D
 BLECharacteristic SpO2MeasurementCharacteristics(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
 BLEDescriptor SpO2Descriptor(BLEUUID((uint16_t)0x2901));
 
@@ -112,7 +115,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   BLE peripheral (server) initialization
 */
 void Init_BLE_as_HeartRateMonitor() {
-  //  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
+  //  Serial.println("Initializing...BLE as a heart rate monitor service 0x180D/0x2A37");
   //  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
   BLEDevice::init("simple SpO2 plotter");
   // Create the BLE Server
@@ -231,7 +234,7 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
-#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define SAMPLING 1 //if you want to see heart beat more precisely , set SAMPLING to 1
 #define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
