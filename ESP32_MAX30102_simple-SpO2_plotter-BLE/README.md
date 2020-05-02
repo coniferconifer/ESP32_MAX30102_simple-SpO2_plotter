@@ -20,6 +20,7 @@ works with Sparkfun MAX3010X library
   
 ## What's new
 - Heart Rate monitor is displayed on Arduino serial plotter.
+- https://youtu.be/NfxGxCVRop4
 
 optional hardwares if you like
 - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
@@ -37,3 +38,19 @@ Fig.3 ESP32 and MH-ET LIVE MAX30102
 
 ## References
 - nRF Toolbox for BLE https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrftoolbox
+- https://en.wikipedia.org/wiki/Oxygen_saturation_(medicine)
+- https://en.wikipedia.org/wiki/Pulse_oximetry
+- https://ethw.org/Takuo_Aoyagi
+- #316 Pulse Oximeter test, function, and usage
+  https://www.youtube.com/watch?v=fsJjHEnlQkU
+- BLE Oximeter Hack with ESP32 for COVID-19 Projects
+  https://www.youtube.com/watch?v=FIVIPHrAuAI
+- ATTiny85 Pulse Oximeter with Photoplethysmogram (PPG) display
+  https://github.com/jeffmer/tinyPulsePPG
+- MAX30102 datasheet
+  https://datasheets.maximintegrated.com/en/ds/MAX30102.pdf
+- Recommended Configurations and Operating Profiles
+  for MAX30101/MAX30102 EV Kits
+  https://pdfserv.maximintegrated.com/en/an/AN6409.pdf
+- Pulse Oximeter Design Using MicrochipÅfs Analog Devices and dsPIC? Digital Signal Controllers (DSCs)
+  https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
