@@ -27,8 +27,8 @@
   ## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
-  // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
-
+  // taken from a graph in https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+  // https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
   ## Instructions:
   0) Install Sparkfun's MAX3010X library
   1) Load code onto ESP32 with MH-ET LIVE MAX30102 board

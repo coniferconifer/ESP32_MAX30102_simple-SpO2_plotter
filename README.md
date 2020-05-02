@@ -11,6 +11,8 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
 - ESP32 BLE version is available. 
   https://github.com/coniferconifer/ESP32_MAX30102_simple-SpO2_plotter/tree/master/ESP32_MAX30102_simple-SpO2_plotter-BLE
 
+  https://www.youtube.com/watch?v=NfxGxCVRop4
+  
 Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
 
@@ -39,7 +41,8 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-  taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+  taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+  or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
   
   
   
@@ -117,5 +120,7 @@ Fig.4 insulating MAX30102 breakout board
 - Recommended Configurations and Operating Profiles
   for MAX30101/MAX30102 EV Kits
   https://pdfserv.maximintegrated.com/en/an/AN6409.pdf
+- Pulse Oximeter Design Using MicrochipÅfs Analog Devices and dsPIC? Digital Signal Controllers (DSCs)
+  https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 
 ![Fig.6 IR and RED LED at MAX30102 on MH-ET LIVE](MAX30102onMH-ET_LIVE.jpg)  
