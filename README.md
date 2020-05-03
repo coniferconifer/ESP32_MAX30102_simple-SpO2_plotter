@@ -16,7 +16,7 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
 Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
 
-Fig.2 SpO2 by breath taking
+Fig.2 SpO2 drops by breath holding
 ![Fig.2 SpO2 by breath taking](stopBreath.png)
 
 ## about SpO2 and pulse oximeter
