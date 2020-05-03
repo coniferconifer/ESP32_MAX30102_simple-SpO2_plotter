@@ -43,7 +43,6 @@
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
   // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
-  //                       http://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 
   ## Instructions:
   0) Install Sparkfun's MAX3010X library
@@ -99,7 +98,7 @@ MAX30105 particleSensor;
 
 byte SpO2_data[8] = {0b00000110, 0, 0, 0, 0, 0, 0, 0}; //8bit SpO2 data , no extended data , defined in 0x2A37
 bool _BLEClientConnected = false;
-#define SpO2Service BLEUUID((uint16_t)0x180D)// Heart rate monitor service 0x180D
+#define SpO2Service BLEUUID((uint16_t)0x180D)
 BLECharacteristic SpO2MeasurementCharacteristics(BLEUUID((uint16_t)0x2A37), BLECharacteristic::PROPERTY_NOTIFY);
 BLEDescriptor SpO2Descriptor(BLEUUID((uint16_t)0x2901));
 
@@ -115,7 +114,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
   BLE peripheral (server) initialization
 */
 void Init_BLE_as_HeartRateMonitor() {
-  //  Serial.println("Initializing...BLE as a heart rate monitor service 0x180D/0x2A37");
+  //  Serial.println("Initializing...BLE as a heart rate monitor service 0x2A37");
   //  Serial.println("Smartphone application for smartphone can be used to monitor SpO2 as bpm");
   BLEDevice::init("simple SpO2 plotter");
   // Create the BLE Server
@@ -178,6 +177,7 @@ void noTone()
 //
 // Heart Rate Monitor by interval of zero crossing at falling edge
 // max 180bpm - min 45bpm
+#define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
 #define LED_PERIOD 100 // light up LED for this period in msec when zero crossing is found for filtered IR signal
 #define MAX_BPS 180
 #define MIN_BPS 45
@@ -203,8 +203,10 @@ double HRM_estimator( double fir , double aveir)
       //   Serial.println("crossed");
       ebpm = ebpm * fbpmrate + (1.0 - fbpmrate) * bpm;//estimated bpm by low pass filtered
 #ifdef LED_SOUND_INDICATOR
-      digitalWrite(LEDPORT, HIGH);
-      tone(BLIPSOUND);
+      if (aveir > FINGER_ON) {
+        digitalWrite(LEDPORT, HIGH);
+        tone(BLIPSOUND);
+      }
 #endif
     } else {
       //Serial.println("faild to find falling edge");
@@ -214,18 +216,20 @@ double HRM_estimator( double fir , double aveir)
   eir_prev = eir;
 #ifdef LED_SOUND_INDICATOR
   if (millis() > (crosstime + LED_PERIOD)) {
-    digitalWrite(LEDPORT, LOW);
-    noTone();
+    if ( aveir > FINGER_ON ) {
+      digitalWrite(LEDPORT, LOW);
+      noTone();
+    }
   }
 #endif
   return (ebpm);
 }
 
-double avered = 0;
-double aveir = 0;
-double sumirrms = 0;
-double sumredrms = 0;
-int i = 0;
+double avered = 0;//DC component of RED signal
+double aveir = 0;//DC component of IR signal
+double sumirrms = 0; //sum of IR square 
+double sumredrms = 0; // sum of RED square
+int i = 0; //loop counter
 #define SUM_CYCLE 100
 int Num = SUM_CYCLE ; //calicurate SpO2 by this sampling interval
 double ESpO2 = 95.0;//initial value of estimated SpO2
@@ -234,7 +238,7 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
-#define SAMPLING 1 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
 #define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
