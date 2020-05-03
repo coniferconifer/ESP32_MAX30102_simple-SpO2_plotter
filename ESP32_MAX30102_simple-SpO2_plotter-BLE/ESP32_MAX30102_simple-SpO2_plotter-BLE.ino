@@ -131,6 +131,27 @@ void Init_BLE_as_HeartRateMonitor() {
   pServer->getAdvertising()->start();// Start advertising
 }
 #endif
+double avered = 0;//DC component of RED signal
+double aveir = 0;//DC component of IR signal
+double sumirrms = 0; //sum of IR square 
+double sumredrms = 0; // sum of RED square
+int i = 0; //loop counter
+#define SUM_CYCLE 100
+int Num = SUM_CYCLE ; //calicurate SpO2 by this sampling interval
+double ESpO2 = 95.0;//initial value of estimated SpO2
+double FSpO2 = 0.7; //filter factor for estimated SpO2
+double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
+
+#define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
+#define SCALE 88.0 //adjust to display heart beat and SpO2 in Arduino serial plotter at the same time
+#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
+#define MINIMUM_SPO2 80.0
+#define MAX_SPO2 100.0
+#define MIN_SPO2 80.0
+
+
+
 void setup()
 {
   Serial.begin(115200);
@@ -205,7 +226,7 @@ double HRM_estimator( double fir , double aveir)
 #ifdef LED_SOUND_INDICATOR
       if (aveir > FINGER_ON) {
         digitalWrite(LEDPORT, HIGH);
-        tone(BLIPSOUND);
+        tone(BLIPSOUND-(100.0-ESpO2)*10.0);//when SpO2=80% BLIPSOUND drops 200Hz to indicate anormaly
       }
 #endif
     } else {
@@ -225,24 +246,7 @@ double HRM_estimator( double fir , double aveir)
   return (ebpm);
 }
 
-double avered = 0;//DC component of RED signal
-double aveir = 0;//DC component of IR signal
-double sumirrms = 0; //sum of IR square 
-double sumredrms = 0; // sum of RED square
-int i = 0; //loop counter
-#define SUM_CYCLE 100
-int Num = SUM_CYCLE ; //calicurate SpO2 by this sampling interval
-double ESpO2 = 95.0;//initial value of estimated SpO2
-double FSpO2 = 0.7; //filter factor for estimated SpO2
-double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
 
-#define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
-#define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
-#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
-#define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
-#define MINIMUM_SPO2 80.0
-#define MAX_SPO2 100.0
-#define MIN_SPO2 80.0
 void loop()
 {
   uint32_t ir, red ;//raw data
