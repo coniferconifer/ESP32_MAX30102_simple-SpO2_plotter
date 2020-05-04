@@ -25,7 +25,7 @@ works with Sparkfun MAX3010X library
 optional hardwares if you like
 - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
 - BEEP piezo speaker on GPIO_12
- 
+- if GPIO_4 is connected to ground, Heart rate will be sent to BLE/HRM.  
 
 Fig.2 SpO2(%) and HRM(bpm) are displayed on Arduino serial plotter
 ![Fig.1 SpO2 , HRM(bpm) and IR/RED signal](SpO2andHRM.jpg)

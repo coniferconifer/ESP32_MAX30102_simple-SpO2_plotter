@@ -10,7 +10,7 @@
   by coniferconifer Copyright 2020
   LICENSED under Apache License 2.0
 
-  Version 1.1
+  Version 1.2
 
   Heart rate moniter is added.
 
@@ -35,9 +35,10 @@
   correct these lines.
 
   ## what's new
-  - Heart rate monitor by zero crossing falling edge interval is added.
-  - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
+  - Heart rate monitor by zero crossing at falling edge is added.
+  - LED Heart beat indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
   - BEEP piezo speaker on GPIO_12
+  - when GPIO_4 is pull down to ground , this program sends Heart Rate to BLE client.
 
   ## Tips:
   SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
@@ -80,6 +81,7 @@ MAX30105 particleSensor;
 
 #define LED_SOUND_INDICATOR
 #define LEDPORT 15
+#define SPO2_HRM_SWITCH GPIO_NUM_4
 #define SPEAKER GPIO_NUM_12
 #define BOOTSOUND 440 //Hz
 #define BLIPSOUND 440*2 //Hz A
@@ -176,6 +178,7 @@ void setup()
 #ifdef BLE
   Init_BLE_as_HeartRateMonitor();
 #endif
+  pinMode(SPO2_HRM_SWITCH,INPUT_PULLUP);
 #ifdef LED_SOUND_INDICATOR
   pinMode(LEDPORT, OUTPUT);
   digitalWrite(LEDPORT, HIGH);
@@ -308,9 +311,11 @@ void loop()
       if ( ir < FINGER_ON) {
         ESpO2 = MINIMUM_SPO2; //indicator for finger detached
       }
-
-      SpO2_data[1] = (byte)ESpO2;
-      //     SpO2_data[1] = (byte)Ebpm;
+      if ( digitalRead(SPO2_HRM_SWITCH)== LOW){
+        SpO2_data[1] = (byte)Ebpm;
+      } else {
+        SpO2_data[1] = (byte)ESpO2;
+      }
       SpO2_data[2] =  0x00;
       SpO2MeasurementCharacteristics.setValue(SpO2_data, 2);
       SpO2MeasurementCharacteristics.notify();
