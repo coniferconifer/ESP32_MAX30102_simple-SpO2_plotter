@@ -5,7 +5,7 @@ Using Sparkfun MAX3010X library
 
 Shows SpO2 and the user's heart beat on Arduino's serial plotter.
 - No display hardware is required.
-- This program does not need large 32bit buffer, caliculates SpO2 on the fly.
+- This program does not need large 32bit buffer, caliculates SpO2 on the fly. (no SpO2 data from the library)
 - This program should not be used for medical purposes !
 - I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 - ESP32 BLE version is available. 
@@ -34,14 +34,15 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ## Tips:
 - Used argorithm
 
-  DC component of IR and RED data (average) is calicurated by digital low pass filter and substracted from data to get AC components.
-  Then, square root means of AC component of RED and IR are calicurated for every 100 samples.
-  SpO2 is calicurated as 
+  DC component of IR and RED data (average) is calculated by digital low pass filter and subtracted from raw data to get AC components.
+  Then, square root means of AC component of RED and IR are calculated for every 100 samples.
+
+  SpO2 is calculated as 
 ```  
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-  taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+  The last formula is taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
   or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
   
   
@@ -64,21 +65,20 @@ Fig.4 insulating MAX30102 breakout board
 ## Instructions:
 
   0) Install Sparkfun's MAX3010X library
-  1) Load code onto ESP32 with MH-ET LIVE MAX30102 board
-  2) put MAX30102 board in plastic bag , insulating from your finger
-     and attach sensor to your finger tip
-  3) Run this program by pressing reset botton on ESP32
+  1) Load the code onto ESP32 with MH-ET LIVE MAX30102 board
+  2) Put MAX30102 board in a plastic bag , insulating from your finger
+     and attach the sensor to your finger tip
+  3) Run this program by pressing reset botton on ESP32 devkitC
   4) Wait for 3 seconds and Open Arduino IDE Tools->'Serial Plotter'
      Make sure the drop down is set to 115200 baud
   5) Search the best position and pressure for the sensor by watching
      the blips on Arduino's serial plotter.
      I recommend to place LED under the backside of nail , wrap you
      finger and the sensor by rubber band softly.
-
-  5) Checkout the SpO2 and blips by seeing serial plotter.
+  6) Checkout the SpO2 and blips by seeing serial plotter.
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
-## Hardware Connections (Breakoutboard to ESP32 Arduino):
+## Hardware Connections (Breakout board to ESP32 Arduino):
 ```
   -VIN = 3.3V
   -GND = GND
@@ -87,7 +87,7 @@ Fig.4 insulating MAX30102 breakout board
   -INT = Not connected
 ```  
 
-## Hardware Connections (Breakoutboard to Arduino nano): 
+## Hardware Connections (Breakout board to Arduino nano): 
   this script also works on Arduino nao.(experimental)
 ```
   -VIN = 3.3V 
@@ -120,7 +120,7 @@ Fig.4 insulating MAX30102 breakout board
 - Recommended Configurations and Operating Profiles
   for MAX30101/MAX30102 EV Kits
   https://pdfserv.maximintegrated.com/en/an/AN6409.pdf
-- Pulse Oximeter Design Using MicrochipÅfs Analog Devices and dsPIC? Digital Signal Controllers (DSCs)
+- Pulse Oximeter Design Using Microchip's Analog Devices and dsPIC Digital Signal Controllers(DSCs)
   https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 
 ![Fig.6 IR and RED LED at MAX30102 on MH-ET LIVE](MAX30102onMH-ET_LIVE.jpg)  
