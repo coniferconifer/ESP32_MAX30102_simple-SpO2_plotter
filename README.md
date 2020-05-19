@@ -12,7 +12,11 @@ Shows SpO2 and the user's heart beat on Arduino's serial plotter.
   https://github.com/coniferconifer/ESP32_MAX30102_simple-SpO2_plotter/tree/master/ESP32_MAX30102_simple-SpO2_plotter-BLE
 
   https://www.youtube.com/watch?v=NfxGxCVRop4
-  
+
+## What's new
+ Sparkfun's MAX30105 board is supported. (May 19, 2020)
+ use #define MAX30105
+   
 Fig.1 SpO2 at boot time
 ![Fig.1 SpO2 at boot time](fingerOffOn.png)
 
@@ -40,6 +44,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   SpO2 is calculated as 
 ```  
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
+  
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
   The last formula is taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
@@ -55,8 +60,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 red = particleSensor.getFIFOIR();
 ir = particleSensor.getFIFORed();
 ```
-  is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
-  correct these lines. 
+  is used in my code. If you have Sparkfun's MAX30105 breakout board , use #define MAX30105
   
 Fig.4 insulating MAX30102 breakout board  
 ![Fig.4 insulating MAX30102 breakout board](insulation.jpg)

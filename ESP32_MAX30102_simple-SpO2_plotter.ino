@@ -21,11 +21,11 @@
   Since MH-ET LIVE MAX30102 breakout board seems outputting IR and RED swapped.
   red = particleSensor.getFIFOIR();
   ir = particleSensor.getFIFORed();
-  is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
-  correct these lines.
+  is used in my code. If you have Sparkfun's MAX30105 breakout board , try to 
+  use #define MAX30105
 
   ## Tips:
-  SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
+  SpO2 is calculated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
   // taken from a graph in https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
   // https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
@@ -41,8 +41,7 @@
      the blips on Arduino's serial plotter
      I recommend to place LED under the backside of nail and wrap you
      finger and the sensor by rubber band softly.
-
-  5) Checkout the SpO2 and blips by seeing serial Plotter
+  6) Checkout the SpO2 and blips by seeing serial Plotter
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
   ## Hardware Connections (Breakoutboard to ESP32 Arduino):
@@ -71,6 +70,9 @@
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
+
+#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105 
+
 #define USEFIFO
 void setup()
 {
@@ -99,7 +101,7 @@ double avered = 0; double aveir = 0;
 double sumirrms = 0;
 double sumredrms = 0;
 int i = 0;
-int Num = 100;//calicurate SpO2 by this sampling interval
+int Num = 100;//calculate SpO2 by this sampling interval
 
 double ESpO2 = 95.0;//initial value of estimated SpO2
 double FSpO2 = 0.7; //filter factor for estimated SpO2
@@ -120,8 +122,13 @@ void loop()
   particleSensor.check(); //Check the sensor, read up to 3 samples
 
   while (particleSensor.available()) {//do we have new data
+#ifdef MAX30105
+   red = particleSensor.getFIFORed(); //Sparkfun's MAX30105
+    ir = particleSensor.getFIFOIR();  //Sparkfun's MAX30105
+#else
     red = particleSensor.getFIFOIR(); //why getFOFOIR output Red data by MAX30102 on MH-ET LIVE breakout board
     ir = particleSensor.getFIFORed(); //why getFIFORed output IR data by MAX30102 on MH-ET LIVE breakout board
+#endif
     i++;
     fred = (double)red;
     fir = (double)ir;
@@ -165,9 +172,13 @@ void loop()
 #else
 
   while (1) {//do we have new data
+#ifdef MAX30105
+   red = particleSensor.getRed();  //Sparkfun's MAX30105
+    ir = particleSensor.getIR();  //Sparkfun's MAX30105
+#else
     red = particleSensor.getIR(); //why getFOFOIR outputs Red data by MAX30102 on MH-ET LIVE breakout board
     ir = particleSensor.getRed(); //why getFIFORed outputs IR data by MAX30102 on MH-ET LIVE breakout board
-
+#endif
     i++;
     fred = (double)red;
     fir = (double)ir;
