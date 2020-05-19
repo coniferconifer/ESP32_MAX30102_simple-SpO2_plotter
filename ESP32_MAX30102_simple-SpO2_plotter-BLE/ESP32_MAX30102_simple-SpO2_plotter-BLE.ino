@@ -41,7 +41,7 @@
   - when GPIO_4 is pull down to ground , this program sends Heart Rate to BLE client.
 
   ## Tips:
-  SpO2 is calicurated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
+  SpO2 is calculated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
   // taken from a graph in http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
 
@@ -78,6 +78,8 @@
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
+
+//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105   
 
 #define LED_SOUND_INDICATOR
 #define LEDPORT 15
@@ -139,7 +141,7 @@ double sumirrms = 0; //sum of IR square
 double sumredrms = 0; // sum of RED square
 int i = 0; //loop counter
 #define SUM_CYCLE 100
-int Num = SUM_CYCLE ; //calicurate SpO2 by this sampling interval
+int Num = SUM_CYCLE ; //calculate SpO2 by this sampling interval
 double ESpO2 = 95.0;//initial value of estimated SpO2
 double FSpO2 = 0.7; //filter factor for estimated SpO2
 double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
@@ -260,8 +262,14 @@ void loop()
   particleSensor.check(); //Check the sensor, read up to 3 samples
 
   while (particleSensor.available()) {//do we have new data
+ 
+#ifdef MAX30105
+   red = particleSensor.getFIFORed(); //Sparkfun's MAX30105
+    ir = particleSensor.getFIFOIR();  //Sparkfun's MAX30105
+#else
     red = particleSensor.getFIFOIR(); //why getFOFOIR output Red data by MAX30102 on MH-ET LIVE breakout board
     ir = particleSensor.getFIFORed(); //why getFIFORed output IR data by MAX30102 on MH-ET LIVE breakout board
+#endif
     i++;
     fred = (double)red;
     fir = (double)ir;

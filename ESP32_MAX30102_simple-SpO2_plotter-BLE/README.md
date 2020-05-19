@@ -19,6 +19,7 @@ works with Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
   
 ## What's new
+- Sparkfun's MAX30105 board is supported, use #define MAX30105
 - Heart Rate monitor is displayed on Arduino serial plotter.
 - https://youtu.be/NfxGxCVRop4
 
@@ -36,6 +37,7 @@ optional hardwares if you like
   SpO2 is calculated as 
 ```  
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
+  
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
   The last formula is taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
@@ -50,8 +52,7 @@ optional hardwares if you like
 red = particleSensor.getFIFOIR();
 ir = particleSensor.getFIFORed();
 ```
-  is used in my code. If you have Sparkfun's MAX30105 breakout board , try to
-  correct these lines. 
+  is used in my code. If you have Sparkfun's MAX30105 breakout board , try #define MAX30105
 
 
 
