@@ -108,9 +108,10 @@ Fig.4 insulating MAX30102 breakout board
 ```
  "MAX30102 was not found. Please check wiring/power/solder jumper."
 ```
-  
+Fig.5 3.3V solder jumper
 ![Fig.5 3.3V solder jumper](SolderJumper.jpg)
 
+Fig.6 for Sparkfun's MAX30105 , use #define MAX30105
 ![Fig.6 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jpg)
 
 ### LICENSED under Apache License 2.0
