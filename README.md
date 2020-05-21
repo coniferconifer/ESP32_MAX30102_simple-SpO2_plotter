@@ -111,7 +111,7 @@ Fig.4 insulating MAX30102 breakout board
   
 ![Fig.5 3.3V solder jumper](SolderJumper.jpg)
 
-![Fig.6 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jps)
+![Fig.6 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jpg)
 
 ### LICENSED under Apache License 2.0
 
