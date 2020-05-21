@@ -1,8 +1,10 @@
 
 # Simple SpO2 plotter for MH-ET LIVE MAX30102 with BLE
 
-SpO2 for Heart rate monitor application on smartphone.
+Using Sparkfun MAX3010X library https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library SpO2 is calulated from square root means of all raw data at 50Hz sampling speed, providing stable SpO2 values and shows SpO2 and the user's heart beat at the same time on Arduino's serial plotter.
+
 This program sends SpO2 as a HRM(Heart Rate Monitor) of BLE standart service and smartphone application such as nRF Toolbox for BLE can display SpO2 as if it is a Heat Rate Monitor.
+SpO2 for Heart rate monitor application on smartphone.
 
 When 93bpm is displayed , it is 93% SpO2. not a Heart Rate!
 
@@ -40,10 +42,10 @@ optional hardwares if you like
   
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-  The last formula is taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
-  or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+The last formula is read from the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
   
-  
+
 
 - when IR signal is smaller than 30000 (#define FINGER_ON 30000), then SpO2 becomes 80 to indicate your finger is not on the sensor.
 
