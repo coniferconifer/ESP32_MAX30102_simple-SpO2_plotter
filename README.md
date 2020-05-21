@@ -47,7 +47,7 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-  The last formula is taken from a graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+  The last formula is read from the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
   or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
   
   
@@ -109,6 +109,8 @@ Fig.4 insulating MAX30102 breakout board
 ```
   
 ![Fig.5 3.3V solder jumper](SolderJumper.jpg)
+
+![Fig.6 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jps)
 
 ### LICENSED under Apache License 2.0
 
