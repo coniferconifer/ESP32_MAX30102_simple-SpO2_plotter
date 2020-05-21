@@ -31,6 +31,7 @@ Fig.2 SpO2 drops by breath holding
   Pulse oximetry was developed in 1972, by Dr.Takuo Aoyagi and Michio Kishi, bioengineers, at Nihon Kohden in Japan.
 
 - https://ethw.org/Takuo_Aoyagi
+- https://www.google.com/search?client=firefox-b-d&q=Dr.Aoyagi+SpO2
 
 Fig.3 MH-ET LIVE MAX30102 breakout board
 ![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
