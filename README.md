@@ -2,8 +2,8 @@
 # Simple SpO2 plotter for MH-ET LIVE MAX30102
 Using Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
-
-Shows SpO2 and the user's heart beat on Arduino's serial plotter.
+SpO2 is calulated from square root means of all raw data at 50Hz sampling speed, providing stable SpO2 values and
+shows SpO2 and the user's heart beat at the same time on Arduino's serial plotter.
 - No display hardware is required.
 - This program does not need large 32bit buffer, caliculates SpO2 on the fly. (no SpO2 data from the library)
 - This program should not be used for medical purposes !
