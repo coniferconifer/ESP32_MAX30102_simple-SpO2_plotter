@@ -5,7 +5,7 @@ Using Sparkfun MAX3010X library
 SpO2 is calulated from square root means of all raw data at 50Hz sampling speed, providing stable SpO2 values and
 shows SpO2 and the user's heart beat at the same time on Arduino's serial plotter.
 - No display hardware is required.
-- This program does not need large 32bit buffer, caliculates SpO2 on the fly. (no SpO2 data from the library)
+- This program does not need large 32bit buffer, calculates SpO2 on the fly. (no SpO2 data from the library)
 - This program should not be used for medical purposes !
 - I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 - ESP32 BLE version is available. 
