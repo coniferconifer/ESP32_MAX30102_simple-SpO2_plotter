@@ -42,6 +42,11 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
   DC component of IR and RED data (average) is calculated by digital low pass filter and subtracted from raw data to get AC components.
   Then, square root means of AC component of RED and IR are calculated for every 100 samples.
 
+Fig.4 Raw RED signal - DC(low pass filtered RED)  
+![Fig.4 Raw RED signal - DC(low pass filtered RED) ](MAX30102-REDraw-DC.png)
+
+
+
   SpO2 is calculated as 
 ```  
   R=((square root means of RED/ RED average )/((square root means of IR)/IR average)) 
@@ -63,8 +68,8 @@ ir = particleSensor.getFIFORed();
 ```
   is used in my code. If you have Sparkfun's MAX30105 breakout board , use #define MAX30105
   
-Fig.4 insulating MAX30102 breakout board  
-![Fig.4 insulating MAX30102 breakout board](insulation.jpg)
+Fig.5 insulating MAX30102 breakout board  
+![Fig.5 insulating MAX30102 breakout board](insulation.jpg)
 
 
 ## Instructions:
@@ -108,11 +113,11 @@ Fig.4 insulating MAX30102 breakout board
 ```
  "MAX30102 was not found. Please check wiring/power/solder jumper."
 ```
-Fig.5 3.3V solder jumper
-![Fig.5 3.3V solder jumper](SolderJumper.jpg)
+Fig.6 3.3V solder jumper
+![Fig.6 3.3V solder jumper](SolderJumper.jpg)
 
-Fig.6 for Sparkfun's MAX30105 , use #define MAX30105
-![Fig.6 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jpg)
+Fig.7 for Sparkfun's MAX30105 , use #define MAX30105
+![Fig.7 for Sparkfun's MAX30105 , use #define MAX30105 ](MAX30105.jpg)
 
 ### LICENSED under Apache License 2.0
 
@@ -131,4 +136,4 @@ Fig.6 for Sparkfun's MAX30105 , use #define MAX30105
 - Pulse Oximeter Design Using Microchip's Analog Devices and dsPIC Digital Signal Controllers(DSCs)
   https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 
-![Fig.6 IR and RED LED at MAX30102 on MH-ET LIVE](MAX30102onMH-ET_LIVE.jpg)  
+![Fig.7 IR and RED LED at MAX30102 on MH-ET LIVE](MAX30102onMH-ET_LIVE.jpg)  
