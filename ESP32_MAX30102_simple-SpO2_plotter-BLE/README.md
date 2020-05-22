@@ -13,7 +13,7 @@ Fig.1 SpO2 is displayed as HRM on nRF Toolbox for BLE
 
 Shows SpO2(%) , Heart Rate(bpm) the user's heart beat by IR and RED LED on Arduino's serial plotter.
 - No display hardware is required.
-- This program does not need large 32bit buffer, caliculates SpO2 on the fly. (no SpO2 data from the library)
+- This program does not need large 32bit buffer, calculates SpO2 on the fly. (no SpO2 data from the library)
 - This program should not be used for medical purposes !
 - I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
 
