@@ -71,7 +71,7 @@
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
 
-#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105 
+//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105 
 
 #define USEFIFO
 void setup()
