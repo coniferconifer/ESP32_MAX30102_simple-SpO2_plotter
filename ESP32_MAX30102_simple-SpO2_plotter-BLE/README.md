@@ -64,7 +64,7 @@ Fig.2 SpO2(%) and HRM(bpm) are displayed on Arduino serial plotter
 Fig.3 ESP32 and MH-ET LIVE MAX30102
 ![Fig.3 ESP32 and MH-ET LIVE MAX30102](ESP32-MAX30102.jpg)
 
-Fig.4 ESP32 and ILI9341 display (use #define TFT_DISPLAY  using TFT_eSPI library )
+Fig.4 ESP32 and ILI9341 display (use #define TFT_DISPLAY  with  TFT_eSPI library )
 ![Fig.4 ILI9341 320x240 display](TFTversion.jpg)
 
 ### LICENSED under Apache License 2.0
