@@ -10,7 +10,7 @@
   by coniferconifer Copyright 2020
   LICENSED under Apache License 2.0
 
-  Version 1.2
+  Version 1.3
 
   Heart rate moniter is added.
 
@@ -61,38 +61,55 @@
   5) Checkout the SpO2 and blips by seeing serial Plotter
      100%,95%,90%,85% SpO2 lines are always drawn on the plotter
 
-  ## Hardware Connections (Breakoutboard to ESP32 Arduino):
+  ## Hardware Connections (Breakoutboard to ESP32 DevkitC):
   -VIN = 3.3V
   -GND = GND
   -SDA = 21 (or SDA)
   -SCL = 22 (or SCL)
   -INT = Not connected
 
+  Use #define TFT_DISPLAY for ILI9341 320x240 display
+  ILI9342 TFT display to ESP32 DevkitC
+  -TFT_MISO = 19
+  -TFT_MOSI = 23
+  -TFT_SCLK = 18
+  -TFT_CS  = 5  // Chip select control pin
+  -TFT_DC  = 17 // Data Command control pin
+  -TFT_RST = 16 // Reset pin (could connect to RST pin)
+  -TOUCH_CS = 2 //not used
   ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.
   says "MAX30102 was not found. Please check wiring/power."
 
 */
-
 #include <Wire.h>
 #include "MAX30105.h" //sparkfun MAX3010X library
 MAX30105 particleSensor;
 
-//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105   
+//CUSTOM DEFINITION
+//#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via eSPI
+//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
+#define BLE
 
+
+#ifdef TFT_DISPLAY
+#include <SPI.h>
+#include <TFT_eSPI.h>
+TFT_eSPI tft = TFT_eSPI();
+#endif
+
+//HARDWARE DEFINITION
 #define LED_SOUND_INDICATOR
-#define LEDPORT 15
+#define LEDPORT         GPIO_NUM_15
 #define SPO2_HRM_SWITCH GPIO_NUM_4
-#define SPEAKER GPIO_NUM_12
+#define SPEAKER         GPIO_NUM_12
 #define BOOTSOUND 440 //Hz
 #define BLIPSOUND 440*2 //Hz A
 // beep sounder
 #define LEDC_CHANNEL_2     2
 #define LEDC_TIMER_13_BIT  13
 #define LEDC_BASE_FREQ     5000
-
-#define BLE
 
 #ifdef BLE
 #include <BLEDevice.h>
@@ -137,9 +154,9 @@ void Init_BLE_as_HeartRateMonitor() {
 #endif
 double avered = 0;//DC component of RED signal
 double aveir = 0;//DC component of IR signal
-double sumirrms = 0; //sum of IR square 
+double sumirrms = 0; //sum of IR square
 double sumredrms = 0; // sum of RED square
-int i = 0; //loop counter
+unsigned int i = 0; //loop counter
 #define SUM_CYCLE 100
 int Num = SUM_CYCLE ; //calculate SpO2 by this sampling interval
 double ESpO2 = 95.0;//initial value of estimated SpO2
@@ -148,16 +165,48 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in Arduino serial plotter at the same time
-#define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
+#define SAMPLING 1 //if you want to see heart beat more precisely , set SAMPLING to 1
 #define FINGER_ON 50000 // if ir signal is lower than this , it indicates your finger is not on the sensor
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
 #define MIN_SPO2 80.0
 
-
-
+#ifdef TFT_DISPLAY
+void display(float ir_forGraph, double Ebpm, double ESpO2, unsigned int loopCnt) {
+#define LCD_WIDTH 320
+#define LCD_HIGHT 240
+#define BOTTOM_IR_SIGNAL 85.0
+#define SCALE_FOR_PULSE 20.0
+  unsigned int x; unsigned int y; int temp;
+  x = loopCnt % LCD_WIDTH;
+  temp = (int)((ir_forGraph - BOTTOM_IR_SIGNAL) * SCALE_FOR_PULSE);
+  y = constrain(temp, 0, (LCD_HIGHT / 2) - 1);
+  Serial.printf(",%d , %d \r\n", x, y);
+  tft.fillRect(x, LCD_HIGHT / 2, 30 , LCD_HIGHT, TFT_BLACK);
+  tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_YELLOW);
+  if (loopCnt % Num == 0) {
+    tft.setCursor(30, 30);
+    if ((int)ESpO2 == (int)MIN_SPO2) {
+      tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
+      tft.print("No Finger");
+    } else {
+      tft.print("SpO2="); tft.print((int)ESpO2); tft.print(" BPM="); tft.print((int)Ebpm);
+      tft.print("  ");// in case SpO2>=100 and BMP>=100 , delete last "0" when SpO2<100 or BMP<100
+    }
+  }
+}
+#endif
 void setup()
 {
+#ifdef TFT_DISPLAY
+  tft.init();
+  tft.setRotation(1);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLUE);
+  tft.setTextSize(3);
+  tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
+#endif
+
   Serial.begin(115200);
   Serial.println("Initializing...");
   // Initialize sensor
@@ -180,7 +229,7 @@ void setup()
 #ifdef BLE
   Init_BLE_as_HeartRateMonitor();
 #endif
-  pinMode(SPO2_HRM_SWITCH,INPUT_PULLUP);
+  pinMode(SPO2_HRM_SWITCH, INPUT_PULLUP);
 #ifdef LED_SOUND_INDICATOR
   pinMode(LEDPORT, OUTPUT);
   digitalWrite(LEDPORT, HIGH);
@@ -231,7 +280,7 @@ double HRM_estimator( double fir , double aveir)
 #ifdef LED_SOUND_INDICATOR
       if (aveir > FINGER_ON) {
         digitalWrite(LEDPORT, HIGH);
-        tone(BLIPSOUND-(100.0-ESpO2)*10.0);//when SpO2=80% BLIPSOUND drops 200Hz to indicate anormaly
+        tone(BLIPSOUND - (100.0 - ESpO2) * 10.0); //when SpO2=80% BLIPSOUND drops 200Hz to indicate anormaly
       }
 #endif
     } else {
@@ -251,7 +300,7 @@ double HRM_estimator( double fir , double aveir)
   return (ebpm);
 }
 
-
+unsigned int loopCnt = 0;
 void loop()
 {
   uint32_t ir, red ;//raw data
@@ -262,15 +311,15 @@ void loop()
   particleSensor.check(); //Check the sensor, read up to 3 samples
 
   while (particleSensor.available()) {//do we have new data
- 
+
 #ifdef MAX30105
-   red = particleSensor.getFIFORed(); //Sparkfun's MAX30105
+    red = particleSensor.getFIFORed(); //Sparkfun's MAX30105
     ir = particleSensor.getFIFOIR();  //Sparkfun's MAX30105
 #else
     red = particleSensor.getFIFOIR(); //why getFOFOIR output Red data by MAX30102 on MH-ET LIVE breakout board
     ir = particleSensor.getFIFORed(); //why getFIFORed output IR data by MAX30102 on MH-ET LIVE breakout board
 #endif
-    i++;
+    i++; loopCnt++;
     fred = (double)red;
     fir = (double)ir;
     avered = avered * frate + (double)red * (1.0 - frate);//average red level by low pass filter
@@ -291,7 +340,8 @@ void loop()
         if ( red_forGraph < MIN_SPO2 ) red_forGraph = MIN_SPO2;
         //        Serial.print(red); Serial.print(","); Serial.print(ir);Serial.print(".");
         if ( ir < FINGER_ON) ESpO2 = MINIMUM_SPO2; //indicator for finger detached
-
+#define PRINT
+#ifdef PRINT
         //Serial.print(bpm);// raw Heart Rate Monitor in bpm
         //Serial.print(",");
         Serial.print(Ebpm);// estimated Heart Rate Monitor in bpm
@@ -306,12 +356,32 @@ void loop()
         Serial.print(","); Serial.print(90.0); //warning SpO2 line
         Serial.print(","); Serial.print(95.0); //safe SpO2 line
         Serial.print(","); Serial.println(100.0); //max SpO2 line
+
+#else
+        Serial.print(fred); Serial.print(",");
+        Serial.print(avered); Serial.println();
+        //    Serial.print(fir);Serial.print(",");
+        //   Serial.print(aveir);Serial.println();
+#endif
+#ifdef TFT_DISPLAY
+        display(ir_forGraph, Ebpm, ESpO2, loopCnt);
+#endif
       }
     }
     if ((i % Num) == 0) {
       double R = (sqrt(sumredrms) / avered) / (sqrt(sumirrms) / aveir);
       // Serial.println(R);
-      SpO2 = -23.3 * (R - 0.4) + 100; //http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+      //#define MAXIMREFDESIGN
+#ifdef MAXIMREFDESIGN
+      //https://github.com/MaximIntegratedRefDesTeam/RD117_ARDUINO/blob/master/algorithm.h
+      //uch_spo2_table is approximated as  -45.060*ratioAverage* ratioAverage + 30.354 *ratioAverage + 94.845 ;
+      SpO2 = -45.060 * R * R + 30.354 * R + 94.845 ;
+      //      SpO2 = 104.0 - 17.0*R; //from MAXIM Integrated https://pdfserv.maximintegrated.com/en/an/AN6409.pdf
+#else
+#define OFFSET 0.0
+      SpO2 = -23.3 * (R - 0.4) + 100 - OFFSET ; //http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+      if (SpO2 > 100.0 ) SpO2 = 100.0;
+#endif
       ESpO2 = FSpO2 * ESpO2 + (1.0 - FSpO2) * SpO2;//low pass filter
       //  Serial.print(SpO2);Serial.print(",");Serial.println(ESpO2);
 #ifdef BLE
@@ -319,7 +389,7 @@ void loop()
       if ( ir < FINGER_ON) {
         ESpO2 = MINIMUM_SPO2; //indicator for finger detached
       }
-      if ( digitalRead(SPO2_HRM_SWITCH)== LOW){
+      if ( digitalRead(SPO2_HRM_SWITCH) == LOW) {
         SpO2_data[1] = (byte)Ebpm;
       } else {
         SpO2_data[1] = (byte)ESpO2;
