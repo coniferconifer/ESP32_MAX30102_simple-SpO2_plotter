@@ -88,12 +88,13 @@
 MAX30105 particleSensor;
 
 //CUSTOM DEFINITION
-//#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via eSPI
-//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
+#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via eSPI
+#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
 #define BLE
 
 
 #ifdef TFT_DISPLAY
+#include "FS.h"
 #include <SPI.h>
 #include <TFT_eSPI.h>
 TFT_eSPI tft = TFT_eSPI();
@@ -181,7 +182,7 @@ void display(float ir_forGraph, double Ebpm, double ESpO2, unsigned int loopCnt)
   x = loopCnt % LCD_WIDTH;
   temp = (int)((ir_forGraph - BOTTOM_IR_SIGNAL) * SCALE_FOR_PULSE);
   y = constrain(temp, 0, (LCD_HIGHT / 2) - 1);
-  Serial.printf(",%d , %d \r\n", x, y);
+//  Serial.printf(",%d , %d \r\n", x, y);
   tft.fillRect(x, LCD_HIGHT / 2, 30 , LCD_HIGHT, TFT_BLACK);
   tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_YELLOW);
   if (loopCnt % Num == 0) {
