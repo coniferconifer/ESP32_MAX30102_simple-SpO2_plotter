@@ -35,21 +35,21 @@ optional hardwares if you like
   
 Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with XPT2046 touch screen controller
 
-  -TFT_MISO = 19
-  -TFT_MOSI = 23
-  -TFT_SCLK = 18
-  -TFT_LCD = 32
-  -TFT_CS  = 5  // Chip select control pin
-  -TFT_DC  = 17 // Data Command control pin
-  -TFT_RST = 16 // Reset pin (could connect to RST pin)
-  -TFT_LCD = 32 // LCD on off
-  -TOUCH_CS = 2 //
-  -TOUCH_DIN = 23 
-  -TOUCH_DO = 19  
-  -TOUCH_IRQ = 33 //used to power on and sleep
+-TFT_MISO = 19
+-TFT_MOSI = 23
+-TFT_SCLK = 18
+-TFT_LCD = 32
+-TFT_CS  = 5  // Chip select control pin
+-TFT_DC  = 17 // Data Command control pin
+-TFT_RST = 16 // Reset pin (could connect to RST pin)
+-TFT_LCD = 32 // LCD on off
+-TOUCH_CS = 2 //
+-TOUCH_DIN = 23 
+-TOUCH_DO = 19  
+-TOUCH_IRQ = 33 //used to power on and sleep
 
-When SpO2 is running , touch the screen to goto sleep mode. 
-When finger is not on , ESP32 will go into sleep mode.
+When this program is running , touch the screen to goto sleep mode. 
+When finger is not on the sensor for 30sec, ESP32 will go into sleep mode.
 It is possible to wakeup ESP32 by touching the screen.
 
 ## Tips:
