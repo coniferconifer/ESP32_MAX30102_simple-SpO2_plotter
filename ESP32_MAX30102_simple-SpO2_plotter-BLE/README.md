@@ -11,23 +11,46 @@ Fig.1 SpO2 is displayed as HRM on nRF Toolbox for BLE
 ![Fig.1 SpO2 as HRM](BLE-SpO2.png)
 
 Shows SpO2(%) , Heart Rate(bpm) the user's heart beat by IR and RED LED on Arduino's serial plotter.
-- No display hardware is required.
-- This program does not need large 32bit buffer, calculates SpO2 on the fly. (no SpO2 data from the library)
-- This program should not be used for medical purposes !
-- I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
-
 works with Sparkfun MAX3010X library
   https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
   
+- No display hardware is required.
+- This program does not need large 32bit buffer, calculates SpO2 on the fly. (no SpO2 data from the sparkfun's library)
+- This program should not be used for medical purposes !
+- I wrote this to learn how SpO2 can be measured and pay tributes for the inventors.
+
+
 ## What's new
 - Sparkfun's MAX30105 board is supported, use #define MAX30105
 - Heart Rate monitor is displayed on Arduino serial plotter.
 - https://youtu.be/NfxGxCVRop4
+- 320x240 ILI9341 TFT touch display can be used by #define TFT_DISPLAY and #define DEEPSLEEP 
 
 optional hardwares if you like
 - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
 - BEEP piezo speaker on GPIO_12
 - if GPIO_4 is connected to ground, Heart rate will be sent to BLE/HRM.  
+- 320x240 ILI9341 TFT touch display via SPI with TFT_eSPI library
+  https://github.com/Bodmer/TFT_eSPI
+  
+Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with XPT2046 touch screen controller
+
+  -TFT_MISO = 19
+  -TFT_MOSI = 23
+  -TFT_SCLK = 18
+  -TFT_LCD = 32
+  -TFT_CS  = 5  // Chip select control pin
+  -TFT_DC  = 17 // Data Command control pin
+  -TFT_RST = 16 // Reset pin (could connect to RST pin)
+  -TFT_LCD = 32 // LCD on off
+  -TOUCH_CS = 2 //
+  -TOUCH_DIN = 23 
+  -TOUCH_DO = 19  
+  -TOUCH_IRQ = 33 //used to power on and sleep
+
+When SpO2 is running , touch the screen to goto sleep mode. 
+When finger is not on , ESP32 will go into sleep mode.
+It is possible to wakeup ESP32 by touching the screen.
 
 ## Tips:
 - Used argorithm

@@ -39,7 +39,8 @@
   - LED Heart beat indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
   - BEEP piezo speaker on GPIO_12
   - when GPIO_4 is pull down to ground , this program sends Heart Rate to BLE client.
-
+  - 320x240 ILI9341 TFT touch display via SPI is supported. Use #define TFT_DISPLAY #define DEEPSLEEP
+  
   ## Tips:
   SpO2 is calculated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
@@ -73,10 +74,16 @@
   -TFT_MISO = 19
   -TFT_MOSI = 23
   -TFT_SCLK = 18
+  -TFT_LCD = 32
   -TFT_CS  = 5  // Chip select control pin
   -TFT_DC  = 17 // Data Command control pin
   -TFT_RST = 16 // Reset pin (could connect to RST pin)
-  -TOUCH_CS = 2 //not used
+  -TFT_LCD = 32 // LCD on off
+  -TOUCH_CS = 2 //
+  -TOUCH_DIN = 23 
+  -TOUCH_DO = 19  
+  -TOUCH_IRQ = 33 //used to power on and sleep
+  
   ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.
@@ -88,10 +95,10 @@
 MAX30105 particleSensor;
 
 //CUSTOM DEFINITION
-#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via eSPI
-#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
+//#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via SPI
+//#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
 #define BLE
-
+//#define DEEPSLEEP // TIMEOUT or TOUCH to goto SLEEP for TFT_DISPLAY
 
 #ifdef TFT_DISPLAY
 #include "FS.h"
@@ -100,11 +107,14 @@ MAX30105 particleSensor;
 TFT_eSPI tft = TFT_eSPI();
 #endif
 
+#define TIMEOUT 30 //Time out second to sleep
 //HARDWARE DEFINITION
 #define LED_SOUND_INDICATOR
 #define LEDPORT         GPIO_NUM_15
 #define SPO2_HRM_SWITCH GPIO_NUM_4
 #define SPEAKER         GPIO_NUM_12
+#define LCD_BACKLIGHT GPIO_NUM_32
+#define WAKEUP_SLEEP GPIO_NUM_33
 #define BOOTSOUND 440 //Hz
 #define BLIPSOUND 440*2 //Hz A
 // beep sounder
@@ -171,32 +181,84 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
 #define MIN_SPO2 80.0
+void sleepSensor(){
+  //Setup to sense a nice looking saw tooth on the plotter
+  byte ledBrightness = 0; //Options: 0=Off to 255=50mA
+  byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
+  byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
+  //Options: 1 = IR only, 2 = Red + IR on MH-ET LIVE MAX30102 board
+  int sampleRate = 200; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  int pulseWidth = 411; //Options: 69, 118, 215, 411
+  int adcRange = 16384; //Options: 2048, 4096, 8192, 16384
+  // Set up the wanted parameters
+  particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+}
 
 #ifdef TFT_DISPLAY
-void display(float ir_forGraph, double Ebpm, double ESpO2, unsigned int loopCnt) {
 #define LCD_WIDTH 320
 #define LCD_HIGHT 240
 #define BOTTOM_IR_SIGNAL 85.0
 #define SCALE_FOR_PULSE 20.0
+
+void gotoSleep(){
+   Serial.println("Go to sleep");
+    tft.setCursor(30, 30);
+    tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
+    tft.print("Go to sleep");
+    sleepSensor();
+    delay(3000);
+    digitalWrite(LCD_BACKLIGHT, LOW); //LCD backlight off
+    esp_deep_sleep_start();
+}
+
+void display(float ir_forGraph, float red_forGraph, double Ebpm, double ESpO2, unsigned int loopCnt) {
+  static long noFingerCount=0;
   unsigned int x; unsigned int y; int temp;
   x = loopCnt % LCD_WIDTH;
-  temp = (int)((ir_forGraph - BOTTOM_IR_SIGNAL) * SCALE_FOR_PULSE);
-  y = constrain(temp, 0, (LCD_HIGHT / 2) - 1);
-//  Serial.printf(",%d , %d \r\n", x, y);
   tft.fillRect(x, LCD_HIGHT / 2, 30 , LCD_HIGHT, TFT_BLACK);
-  tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_YELLOW);
-  if (loopCnt % Num == 0) {
+  if ( loopCnt % 2 == 0) {
+    temp = (int)((ir_forGraph - BOTTOM_IR_SIGNAL) * SCALE_FOR_PULSE);
+    y = constrain(temp, 0, (LCD_HIGHT / 2) - 1);
+    //  Serial.printf(",%d , %d \r\n", x, y);
+    tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_WHITE);
+  } else {
+    temp = (int)((red_forGraph - BOTTOM_IR_SIGNAL) * SCALE_FOR_PULSE);
+    y = constrain(temp, 0, (LCD_HIGHT / 2) - 1);
+    //  Serial.printf(",%d , %d \r\n", x, y);
+    tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_RED);
+  }  if (loopCnt % Num == 0) {
     tft.setCursor(30, 30);
     if ((int)ESpO2 == (int)MIN_SPO2) {
       tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
       tft.print("No Finger");
+//      Serial.println(noFingerCount);
+      noFingerCount++;
+      if ( noFingerCount > TIMEOUT/2) gotoSleep();//TIMEOUT 
     } else {
+      noFingerCount=0; //reset noFingerCount
       tft.print("SpO2="); tft.print((int)ESpO2); tft.print(" BPM="); tft.print((int)Ebpm);
       tft.print("  ");// in case SpO2>=100 and BMP>=100 , delete last "0" when SpO2<100 or BMP<100
     }
   }
+#ifdef DEEPSLEEP
+  if ( digitalRead(WAKEUP_SLEEP) == 0) {
+    gotoSleep();
+  }
+#endif
 }
 #endif
+void initSensor(){
+  //Setup to sense a nice looking saw tooth on the plotter
+  byte ledBrightness = 0x7F; //Options: 0=Off to 255=50mA
+  byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
+  byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
+  //Options: 1 = IR only, 2 = Red + IR on MH-ET LIVE MAX30102 board
+  int sampleRate = 200; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  int pulseWidth = 411; //Options: 69, 118, 215, 411
+  int adcRange = 16384; //Options: 2048, 4096, 8192, 16384
+  // Set up the wanted parameters
+  particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+}
 void setup()
 {
 #ifdef TFT_DISPLAY
@@ -208,16 +270,19 @@ void setup()
   tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
 #endif
 
+
   Serial.begin(115200);
   Serial.println("Initializing...");
   // Initialize sensor
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
   {
-    Serial.println("MAX30102 was not found. Please check wiring/power/solder jumper at MH-ET LIVE MAX30102 board. ");
+    Serial.println("MAX3010X was not found.");
+    Serial.println("Please check wiring/power/solder jumper at MH-ET LIVE MAX30102 board. ");
     while (1);
   }
-
-  //Setup to sense a nice looking saw tooth on the plotter
+  initSensor();
+#if 0
+//Setup to sense a nice looking saw tooth on the plotter
   byte ledBrightness = 0x7F; //Options: 0=Off to 255=50mA
   byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
   byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
@@ -227,6 +292,7 @@ void setup()
   int adcRange = 16384; //Options: 2048, 4096, 8192, 16384
   // Set up the wanted parameters
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
+#endif
 #ifdef BLE
   Init_BLE_as_HeartRateMonitor();
 #endif
@@ -239,6 +305,15 @@ void setup()
   ledcSetup(LEDC_CHANNEL_2, LEDC_BASE_FREQ, LEDC_TIMER_13_BIT) ;
   ledcAttachPin(SPEAKER, LEDC_CHANNEL_2) ;
   tone(BOOTSOUND); delay(500); noTone();
+#endif
+
+
+#ifdef DEEPSLEEP
+  // GPIO32 is used to wakeup ESP32
+  pinMode(WAKEUP_SLEEP, INPUT_PULLUP);
+  pinMode(LCD_BACKLIGHT, OUTPUT);
+  digitalWrite(LCD_BACKLIGHT, HIGH); //LCD backlight
+  esp_sleep_enable_ext0_wakeup(WAKEUP_SLEEP, LOW);
 #endif
 }
 
@@ -365,7 +440,7 @@ void loop()
         //   Serial.print(aveir);Serial.println();
 #endif
 #ifdef TFT_DISPLAY
-        display(ir_forGraph, Ebpm, ESpO2, loopCnt);
+        display(ir_forGraph, red_forGraph, Ebpm, ESpO2, loopCnt);
 #endif
       }
     }
