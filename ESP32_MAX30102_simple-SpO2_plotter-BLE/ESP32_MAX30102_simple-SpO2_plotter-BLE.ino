@@ -40,7 +40,7 @@
   - BEEP piezo speaker on GPIO_12
   - when GPIO_4 is pull down to ground , this program sends Heart Rate to BLE client.
   - 320x240 ILI9341 TFT touch display via SPI is supported. Use #define TFT_DISPLAY #define DEEPSLEEP
-  
+
   ## Tips:
   SpO2 is calculated as R=((square root means or Red/Red average )/((square root means of IR)/IR average))
   SpO2 = -23.3 * (R - 0.4) + 100;
@@ -80,14 +80,14 @@
   -TFT_RST = 16 // Reset pin (could connect to RST pin)
   -TFT_LCD = 32 // LCD on off
   -TOUCH_CS = 2 //
-  -TOUCH_DIN = 23 
-  -TOUCH_DO = 19  
+  -TOUCH_DIN = 23
+  -TOUCH_DO = 19
   -TOUCH_IRQ = 33 //used to power on and sleep
-  
+
   ## Trouble Shooting:
   Make sure to solder jumper on 3V3 side.
   if you forget this, I2C does not work and can not find MAX30102.
-  says "MAX30102 was not found. Please check wiring/power."
+  says "MAX3010X was not found. Please check wiring/power."
 
 */
 #include <Wire.h>
@@ -97,8 +97,9 @@ MAX30105 particleSensor;
 //CUSTOM DEFINITION
 //#define TFT_DISPLAY // for 320x240 ILI9341 TFT display via SPI
 //#define MAX30105 //if you have Sparkfun's MAX30105 breakout board , try #define MAX30105
+//#define DEEPSLEEP // TIMEOUT or TOUCH to go to SLEEP for TFT_DISPLAY
+
 #define BLE
-//#define DEEPSLEEP // TIMEOUT or TOUCH to goto SLEEP for TFT_DISPLAY
 
 #ifdef TFT_DISPLAY
 #include "FS.h"
@@ -163,16 +164,16 @@ void Init_BLE_as_HeartRateMonitor() {
   pServer->getAdvertising()->start();// Start advertising
 }
 #endif
-double avered = 0;//DC component of RED signal
-double aveir = 0;//DC component of IR signal
-double sumirrms = 0; //sum of IR square
-double sumredrms = 0; // sum of RED square
+double aveRed = 0;//DC component of RED signal
+double aveIr = 0;//DC component of IR signal
+double sumIrRMS = 0; //sum of IR square
+double sumRedRMS = 0; // sum of RED square
 unsigned int i = 0; //loop counter
 #define SUM_CYCLE 100
 int Num = SUM_CYCLE ; //calculate SpO2 by this sampling interval
-double ESpO2 = 95.0;//initial value of estimated SpO2
-double FSpO2 = 0.7; //filter factor for estimated SpO2
-double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
+double eSpO2 = 95.0;//initial value of estimated SpO2
+double fSpO2 = 0.7; //filter factor for estimated SpO2
+double fRate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
 
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in Arduino serial plotter at the same time
@@ -181,7 +182,7 @@ double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC comp
 #define MINIMUM_SPO2 80.0
 #define MAX_SPO2 100.0
 #define MIN_SPO2 80.0
-void sleepSensor(){
+void sleepSensor() {
   //Setup to sense a nice looking saw tooth on the plotter
   byte ledBrightness = 0; //Options: 0=Off to 255=50mA
   byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
@@ -200,19 +201,19 @@ void sleepSensor(){
 #define BOTTOM_IR_SIGNAL 85.0
 #define SCALE_FOR_PULSE 20.0
 
-void gotoSleep(){
-   Serial.println("Go to sleep");
-    tft.setCursor(30, 30);
-    tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
-    tft.print("Go to sleep");
-    sleepSensor();
-    delay(3000);
-    digitalWrite(LCD_BACKLIGHT, LOW); //LCD backlight off
-    esp_deep_sleep_start();
+void gotoSleep() {
+  Serial.println("Go to sleep");
+  tft.setCursor(30, 30);
+  tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
+  tft.print("Go to sleep");
+  sleepSensor();
+  delay(3000);
+  digitalWrite(LCD_BACKLIGHT, LOW); //LCD backlight off
+  esp_deep_sleep_start();
 }
 
-void display(float ir_forGraph, float red_forGraph, double Ebpm, double ESpO2, unsigned int loopCnt) {
-  static long noFingerCount=0;
+void display(float ir_forGraph, float red_forGraph, double Ebpm, double eSpO2, unsigned int loopCnt) {
+  static long noFingerCount = 0;
   unsigned int x; unsigned int y; int temp;
   x = loopCnt % LCD_WIDTH;
   tft.fillRect(x, LCD_HIGHT / 2, 30 , LCD_HIGHT, TFT_BLACK);
@@ -228,15 +229,15 @@ void display(float ir_forGraph, float red_forGraph, double Ebpm, double ESpO2, u
     tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_RED);
   }  if (loopCnt % Num == 0) {
     tft.setCursor(30, 30);
-    if ((int)ESpO2 == (int)MIN_SPO2) {
+    if ((int)eSpO2 == (int)MIN_SPO2) {
       tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
       tft.print("No Finger");
-//      Serial.println(noFingerCount);
+      //      Serial.println(noFingerCount);
       noFingerCount++;
-      if ( noFingerCount > TIMEOUT/2) gotoSleep();//TIMEOUT 
+      if ( noFingerCount > TIMEOUT / 2) gotoSleep(); //TIMEOUT
     } else {
-      noFingerCount=0; //reset noFingerCount
-      tft.print("SpO2="); tft.print((int)ESpO2); tft.print(" BPM="); tft.print((int)Ebpm);
+      noFingerCount = 0; //reset noFingerCount
+      tft.print("SpO2="); tft.print((int)eSpO2); tft.print(" BPM="); tft.print((int)Ebpm);
       tft.print("  ");// in case SpO2>=100 and BMP>=100 , delete last "0" when SpO2<100 or BMP<100
     }
   }
@@ -247,7 +248,7 @@ void display(float ir_forGraph, float red_forGraph, double Ebpm, double ESpO2, u
 #endif
 }
 #endif
-void initSensor(){
+void initSensor() {
   //Setup to sense a nice looking saw tooth on the plotter
   byte ledBrightness = 0x7F; //Options: 0=Off to 255=50mA
   byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
@@ -281,18 +282,7 @@ void setup()
     while (1);
   }
   initSensor();
-#if 0
-//Setup to sense a nice looking saw tooth on the plotter
-  byte ledBrightness = 0x7F; //Options: 0=Off to 255=50mA
-  byte sampleAverage = 4; //Options: 1, 2, 4, 8, 16, 32
-  byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
-  //Options: 1 = IR only, 2 = Red + IR on MH-ET LIVE MAX30102 board
-  int sampleRate = 200; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
-  int pulseWidth = 411; //Options: 69, 118, 215, 411
-  int adcRange = 16384; //Options: 2048, 4096, 8192, 16384
-  // Set up the wanted parameters
-  particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange); //Configure sensor with these settings
-#endif
+
 #ifdef BLE
   Init_BLE_as_HeartRateMonitor();
 #endif
@@ -332,7 +322,7 @@ void noTone()
 #define LED_PERIOD 100 // light up LED for this period in msec when zero crossing is found for filtered IR signal
 #define MAX_BPS 180
 #define MIN_BPS 45
-double HRM_estimator( double fir , double aveir)
+double HRM_estimator( double fir , double aveIr)
 {
   static double fbpmrate = 0.95; // low pass filter coefficient for HRM in bpm
   static uint32_t crosstime = 0; //falling edge , zero crossing time in msec
@@ -340,13 +330,13 @@ double HRM_estimator( double fir , double aveir)
   static double bpm = 60.0;
   static double ebpm = 60.0;
   static double eir = 0.0; //estimated lowpass filtered IR signal to find falling edge without notch
-  static double firrate = 0.85; //IR filter coefficient to remove notch , should be smaller than frate
+  static double firrate = 0.85; //IR filter coefficient to remove notch , should be smaller than fRate
   static double eir_prev = 0.0;
 
 
   // Heart Rate Monitor by finding falling edge
   eir = eir * firrate + fir * (1.0 - firrate); //estimated IR : low pass filtered IR signal
-  if ( ((eir - aveir) * (eir_prev - aveir) < 0 ) && ((eir - aveir) < 0.0)) { //find zero cross at falling edge
+  if ( ((eir - aveIr) * (eir_prev - aveIr) < 0 ) && ((eir - aveIr) < 0.0)) { //find zero cross at falling edge
     crosstime = millis();//system time in msec of falling edge
     //Serial.print(crosstime); Serial.print(","); Serial.println(crosstime_prev);
     if ( ((crosstime - crosstime_prev ) > (60 * 1000 / MAX_BPS)) && ((crosstime - crosstime_prev ) < (60 * 1000 / MIN_BPS)) ) {
@@ -354,9 +344,9 @@ double HRM_estimator( double fir , double aveir)
       //   Serial.println("crossed");
       ebpm = ebpm * fbpmrate + (1.0 - fbpmrate) * bpm;//estimated bpm by low pass filtered
 #ifdef LED_SOUND_INDICATOR
-      if (aveir > FINGER_ON) {
+      if (aveIr > FINGER_ON) {
         digitalWrite(LEDPORT, HIGH);
-        tone(BLIPSOUND - (100.0 - ESpO2) * 10.0); //when SpO2=80% BLIPSOUND drops 200Hz to indicate anormaly
+        tone(BLIPSOUND - (100.0 - eSpO2) * 10.0); //when SpO2=80% BLIPSOUND drops 200Hz to indicate anormaly
       }
 #endif
     } else {
@@ -367,7 +357,7 @@ double HRM_estimator( double fir , double aveir)
   eir_prev = eir;
 #ifdef LED_SOUND_INDICATOR
   if (millis() > (crosstime + LED_PERIOD)) {
-    if ( aveir > FINGER_ON ) {
+    if ( aveIr > FINGER_ON ) {
       digitalWrite(LEDPORT, LOW);
       noTone();
     }
@@ -398,36 +388,36 @@ void loop()
     i++; loopCnt++;
     fred = (double)red;
     fir = (double)ir;
-    avered = avered * frate + (double)red * (1.0 - frate);//average red level by low pass filter
-    aveir = aveir * frate + (double)ir * (1.0 - frate); //average IR level by low pass filter
-    sumredrms += (fred - avered) * (fred - avered); //square sum of alternate component of red level
-    sumirrms += (fir - aveir) * (fir - aveir);//square sum of alternate component of IR level
+    aveRed = aveRed * fRate + (double)red * (1.0 - fRate);//average red level by low pass filter
+    aveIr = aveIr * fRate + (double)ir * (1.0 - fRate); //average IR level by low pass filter
+    sumRedRMS += (fred - aveRed) * (fred - aveRed); //square sum of alternate component of red level
+    sumIrRMS += (fir - aveIr) * (fir - aveIr);//square sum of alternate component of IR level
 
-    Ebpm = HRM_estimator(fir, aveir); //Ebpm is estimated BPM
+    Ebpm = HRM_estimator(fir, aveIr); //Ebpm is estimated BPM
 
     if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by decimation
       if ( millis() > TIMETOBOOT) {
-        float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
-        float red_forGraph = (2.0 * fred - avered) / avered * SCALE;
+        float ir_forGraph = (2.0 * fir - aveIr) / aveIr * SCALE;
+        float red_forGraph = (2.0 * fred - aveRed) / aveRed * SCALE;
         //trancation to avoid Serial plotter's autoscaling
         if ( ir_forGraph > MAX_SPO2) ir_forGraph = MAX_SPO2;
         if ( ir_forGraph < MIN_SPO2) ir_forGraph = MIN_SPO2;
         if ( red_forGraph > MAX_SPO2 ) red_forGraph = MAX_SPO2;
         if ( red_forGraph < MIN_SPO2 ) red_forGraph = MIN_SPO2;
         //        Serial.print(red); Serial.print(","); Serial.print(ir);Serial.print(".");
-        if ( ir < FINGER_ON) ESpO2 = MINIMUM_SPO2; //indicator for finger detached
+        if ( ir < FINGER_ON) eSpO2 = MINIMUM_SPO2; //indicator for finger detached
 #define PRINT
 #ifdef PRINT
         //Serial.print(bpm);// raw Heart Rate Monitor in bpm
         //Serial.print(",");
         Serial.print(Ebpm);// estimated Heart Rate Monitor in bpm
         Serial.print(",");
-        //        Serial.print(Eir - aveir);
+        //        Serial.print(Eir - aveIr);
         //        Serial.print(",");
         Serial.print(ir_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(","); Serial.print(red_forGraph); // to display pulse wave at the same time with SpO2 data
         Serial.print(",");
-        Serial.print(ESpO2); //low pass filtered SpO2
+        Serial.print(eSpO2); //low pass filtered SpO2
         Serial.print(","); Serial.print(85.0); //reference SpO2 line
         Serial.print(","); Serial.print(90.0); //warning SpO2 line
         Serial.print(","); Serial.print(95.0); //safe SpO2 line
@@ -435,17 +425,17 @@ void loop()
 
 #else
         Serial.print(fred); Serial.print(",");
-        Serial.print(avered); Serial.println();
+        Serial.print(aveRed); Serial.println();
         //    Serial.print(fir);Serial.print(",");
-        //   Serial.print(aveir);Serial.println();
+        //   Serial.print(aveIr);Serial.println();
 #endif
 #ifdef TFT_DISPLAY
-        display(ir_forGraph, red_forGraph, Ebpm, ESpO2, loopCnt);
+        display(ir_forGraph, red_forGraph, Ebpm, eSpO2, loopCnt);
 #endif
       }
     }
     if ((i % Num) == 0) {
-      double R = (sqrt(sumredrms) / avered) / (sqrt(sumirrms) / aveir);
+      double R = (sqrt(sumRedRMS) / aveRed) / (sqrt(sumIrRMS) / aveIr);
       // Serial.println(R);
       //#define MAXIMREFDESIGN
 #ifdef MAXIMREFDESIGN
@@ -458,23 +448,23 @@ void loop()
       SpO2 = -23.3 * (R - 0.4) + 100 - OFFSET ; //http://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
       if (SpO2 > 100.0 ) SpO2 = 100.0;
 #endif
-      ESpO2 = FSpO2 * ESpO2 + (1.0 - FSpO2) * SpO2;//low pass filter
-      //  Serial.print(SpO2);Serial.print(",");Serial.println(ESpO2);
+      eSpO2 = fSpO2 * eSpO2 + (1.0 - fSpO2) * SpO2;//low pass filter
+      //  Serial.print(SpO2);Serial.print(",");Serial.println(eSpO2);
 #ifdef BLE
 
       if ( ir < FINGER_ON) {
-        ESpO2 = MINIMUM_SPO2; //indicator for finger detached
+        eSpO2 = MINIMUM_SPO2; //indicator for finger detached
       }
       if ( digitalRead(SPO2_HRM_SWITCH) == LOW) {
         SpO2_data[1] = (byte)Ebpm;
       } else {
-        SpO2_data[1] = (byte)ESpO2;
+        SpO2_data[1] = (byte)eSpO2;
       }
       SpO2_data[2] =  0x00;
       SpO2MeasurementCharacteristics.setValue(SpO2_data, 2);
       SpO2MeasurementCharacteristics.notify();
 #endif
-      sumredrms = 0.0; sumirrms = 0.0; i = 0;//reset mean square at every interval
+      sumRedRMS = 0.0; sumIrRMS = 0.0; i = 0;//reset mean square at every interval
       break;
     }
     particleSensor.nextSample(); //We're finished with this sample so move to next sample
