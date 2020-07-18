@@ -34,7 +34,7 @@ optional hardwares if you like
   https://github.com/Bodmer/TFT_eSPI
   
 Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with XPT2046 touch screen controller
-
+```
 -TFT_MISO = 19
 -TFT_MOSI = 23
 -TFT_SCLK = 18
@@ -47,7 +47,7 @@ Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with X
 -TOUCH_DIN = 23 
 -TOUCH_DO = 19  
 -TOUCH_IRQ = 33 //used to power on and sleep
-
+```
 When this program is running , touch the screen to goto sleep mode. 
 When finger is not on the sensor for 30sec, ESP32 will go into sleep mode.
 It is possible to wakeup ESP32 by touching the screen.
