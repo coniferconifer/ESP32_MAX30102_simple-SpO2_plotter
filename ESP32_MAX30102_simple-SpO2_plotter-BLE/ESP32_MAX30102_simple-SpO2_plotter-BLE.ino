@@ -85,7 +85,7 @@
   -TOUCH_IRQ = 33 //used to power on and sleep
 
   ## Trouble Shooting:
-  Make sure to solder jumper on 3V3 side.
+  Make sure to solder jumper pad on 3V3 side for MH-ET LIVE MAX30102 board.
   if you forget this, I2C does not work and can not find MAX30102.
   says "MAX3010X was not found. Please check wiring/power."
 
@@ -200,16 +200,21 @@ void sleepSensor() {
 #define LCD_HIGHT 240
 #define BOTTOM_IR_SIGNAL 85.0
 #define SCALE_FOR_PULSE 20.0
+#define TEXT_START_X 30
+#define TEXT_START_Y 30
+#define FIGURE_OFFSET_Y 70
 
 void gotoSleep() {
   Serial.println("Go to sleep");
-  tft.setCursor(30, 30);
-  tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
-  tft.print("Go to sleep");
+  tft.setTextSize(3); tft.setTextColor(TFT_YELLOW);
+  tft.setCursor(TEXT_START_X, TEXT_START_Y);
+  tft.fillRect(0, 0, LCD_WIDTH, LCD_HIGHT / 2, TFT_BLUE);
+  tft.print("Touch screen\r\n");
+  tft.print("   to restart");
   sleepSensor();
   delay(3000);
   digitalWrite(LCD_BACKLIGHT, LOW); //LCD backlight off
-  esp_deep_sleep_start();
+  esp_deep_sleep_start();//DEEPSLEEP
 }
 
 void display(float ir_forGraph, float red_forGraph, double Ebpm, double eSpO2, unsigned int loopCnt) {
@@ -228,17 +233,24 @@ void display(float ir_forGraph, float red_forGraph, double Ebpm, double eSpO2, u
     //  Serial.printf(",%d , %d \r\n", x, y);
     tft.drawLine(x, LCD_HIGHT - 1, x, LCD_HIGHT - y, TFT_RED);
   }  if (loopCnt % Num == 0) {
-    tft.setCursor(30, 30);
+
+
     if ((int)eSpO2 == (int)MIN_SPO2) {
-      tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
-      tft.print("No Finger");
+      tft.fillRect(0, FIGURE_OFFSET_Y, LCD_WIDTH, LCD_HIGHT / 2 - FIGURE_OFFSET_Y , TFT_BLUE);
+      tft.setTextSize(3); tft.setTextColor(TFT_RED);
+      tft.setCursor(TEXT_START_X, FIGURE_OFFSET_Y);
+      tft.print("Finger out");
       //      Serial.println(noFingerCount);
       noFingerCount++;
       if ( noFingerCount > TIMEOUT / 2) gotoSleep(); //TIMEOUT
     } else {
       noFingerCount = 0; //reset noFingerCount
-      tft.print("SpO2="); tft.print((int)eSpO2); tft.print(" BPM="); tft.print((int)Ebpm);
+      tft.fillRect(0, FIGURE_OFFSET_Y, LCD_WIDTH, LCD_HIGHT / 2 - FIGURE_OFFSET_Y , TFT_BLUE);
+      tft.setTextSize(4); tft.setTextColor(TFT_WHITE);
+      tft.setCursor(TEXT_START_X, FIGURE_OFFSET_Y);
+      tft.print("  "); tft.print((int)eSpO2); tft.print("  "); tft.print((int)Ebpm);
       tft.print("  ");// in case SpO2>=100 and BMP>=100 , delete last "0" when SpO2<100 or BMP<100
+
     }
   }
 #ifdef DEEPSLEEP
@@ -262,25 +274,40 @@ void initSensor() {
 }
 void setup()
 {
-#ifdef TFT_DISPLAY
-  tft.init();
-  tft.setRotation(1);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE, TFT_BLUE);
-  tft.setTextSize(3);
-  tft.fillRect(0, 20, LCD_WIDTH, LCD_HIGHT / 3, TFT_BLUE);
-#endif
-
-
   Serial.begin(115200);
   Serial.println("Initializing...");
   // Initialize sensor
   if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) //Use default I2C port, 400kHz speed
   {
     Serial.println("MAX3010X was not found.");
+#ifdef MAX30105
+    Serial.println("Please check wiring/power at MAX30105 board.");
+#else
     Serial.println("Please check wiring/power/solder jumper at MH-ET LIVE MAX30102 board. ");
-    while (1);
+#endif
+
+#ifdef TFT_DISPLAY
+    digitalWrite(LCD_BACKLIGHT, LOW); //LCD backlight off
+#endif
+    Serial.println("Go to sleep. Bye");
+    esp_deep_sleep_start();
   }
+#ifdef TFT_DISPLAY
+  tft.init();
+  tft.setRotation(1);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLUE);
+
+  tft.setTextSize(3);
+  tft.fillRect(0, 0, LCD_WIDTH, LCD_HIGHT / 2 , TFT_BLUE);
+  tft.setTextSize(2); tft.setCursor(0, 3);
+  tft.setTextColor(TFT_YELLOW, TFT_BLUE); tft.print(" Simple SpO2 plotter V1.3");
+
+  tft.setCursor(TEXT_START_X, TEXT_START_Y);
+  tft.setTextSize(3); tft.setTextColor(TFT_WHITE, TFT_BLUE);
+  tft.print("%SpO2   PR bpm");
+  Serial.println("TFT_DISPLAY is used");
+#endif
   initSensor();
 
 #ifdef BLE
@@ -297,9 +324,9 @@ void setup()
   tone(BOOTSOUND); delay(500); noTone();
 #endif
 
-
 #ifdef DEEPSLEEP
-  // GPIO32 is used to wakeup ESP32
+  // GPIO33 is used to wakeup ESP32
+  Serial.println("sleep and wakeup by touching LCD panel");
   pinMode(WAKEUP_SLEEP, INPUT_PULLUP);
   pinMode(LCD_BACKLIGHT, OUTPUT);
   digitalWrite(LCD_BACKLIGHT, HIGH); //LCD backlight
