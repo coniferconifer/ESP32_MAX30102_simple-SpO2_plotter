@@ -22,34 +22,36 @@ works with Sparkfun MAX3010X library
 
 ## What's new
 - Sparkfun's MAX30105 board is supported, use #define MAX30105
-- Heart Rate monitor is displayed on Arduino serial plotter.
+- Heart Rate monitor is displayed on Arduino IDE's serial plotter.
 - https://youtu.be/NfxGxCVRop4
-- 320x240 ILI9341 TFT touch display can be used by #define TFT_DISPLAY and #define DEEPSLEEP 
+- 320x240 ILI9341 TFT touch screen display can be used by #define TFT_DISPLAY and #define DEEPSLEEP 
 
-optional hardwares if you like
+Optional hardwares if you like
 - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
 - BEEP piezo speaker on GPIO_12
 - if GPIO_4 is connected to ground, Heart rate will be sent to BLE/HRM.  
-- 320x240 ILI9341 TFT touch display via SPI with TFT_eSPI library
+- 320x240 ILI9341 TFT touch screen display via SPI with TFT_eSPI library
   https://github.com/Bodmer/TFT_eSPI
   
 Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with XPT2046 touch screen controller
 ```
--TFT_MISO = 19
--TFT_MOSI = 23
--TFT_SCLK = 18
--TFT_LCD = 32
--TFT_CS  = 5  // Chip select control pin
--TFT_DC  = 17 // Data Command control pin
--TFT_RST = 16 // Reset pin (could connect to RST pin)
--TFT_LCD = 32 // LCD on off
--TOUCH_CS = 2 //
--TOUCH_DIN = 23 
--TOUCH_DO = 19  
--TOUCH_IRQ = 33 //used to power on and sleep
+            
+-TFT_MISO = GPIO_NUM_19
+-TFT_MOSI = GPIO_NUM_23
+-TFT_SCLK = GPIO_NUM_18
+-TFT_LCD = GPIO_NUM_32
+-TFT_CS  = GPIO_NUM_5  // Chip select control pin
+-TFT_DC  = GPIO_NUM_17 // Data Command control pin
+-TFT_RST = GPIO_NUM_16 // Reset pin (could connect to RST pin)
+-TFT_LCD = GPIO_NUM_32 // LCD on off
+-TOUCH_CS = GPIO_NUM_2 // for future use
+-TOUCH_DIN = GPIO_NUM_23 // for future use
+-TOUCH_DO = GPIO_NUM_19  // for future use
+-TOUCH_IRQ = GPIO_NUM_33 // used to power on and sleep
+ if you are to use ILI9341 display without touch screen sensor , use a push button connected to GPIO33 and GND.
 ```
-When this program is running , touch the screen to goto sleep mode. 
-When finger is not on the sensor for 30sec, ESP32 will go into sleep mode.
+When this program is running , touch the screen to go to sleep mode. 
+When finger is not on the sensor for 30sec, ESP32 will go to sleep mode.
 It is possible to wakeup ESP32 by touching the screen.
 
 ## Tips:
@@ -87,13 +89,17 @@ Fig.2 SpO2(%) and HRM(bpm) are displayed on Arduino serial plotter
 Fig.3 ESP32 and MH-ET LIVE MAX30102
 ![Fig.3 ESP32 and MH-ET LIVE MAX30102](ESP32-MAX30102.jpg)
 
-Fig.4 ESP32 and ILI9341 display (use #define TFT_DISPLAY  with  TFT_eSPI library )
+Fig.4 ESP32 and ILI9341 display with XPT2046 touch screen controller (use #define TFT_DISPLAY and #define DEEPSLEEP with  TFT_eSPI library )
 ![Fig.4 ILI9341 320x240 display](TFTversion.jpg)
 
 ### LICENSED under Apache License 2.0
 
 ## References
+- https://github.com/sparkfun/SparkFun_MAX3010x_Sensor_Library
+- https://github.com/Bodmer/TFT_eSPI
+
 - nRF Toolbox for BLE https://play.google.com/store/apps/details?id=no.nordicsemi.android.nrftoolbox
+
 - https://en.wikipedia.org/wiki/Oxygen_saturation_(medicine)
 - https://en.wikipedia.org/wiki/Pulse_oximetry
 - https://ethw.org/Takuo_Aoyagi
@@ -103,6 +109,7 @@ Fig.4 ESP32 and ILI9341 display (use #define TFT_DISPLAY  with  TFT_eSPI library
   https://www.youtube.com/watch?v=FIVIPHrAuAI
 - ATTiny85 Pulse Oximeter with Photoplethysmogram (PPG) display
   https://github.com/jeffmer/tinyPulsePPG
+
 - MAX30102 datasheet
   https://datasheets.maximintegrated.com/en/ds/MAX30102.pdf
 - Recommended Configurations and Operating Profiles
