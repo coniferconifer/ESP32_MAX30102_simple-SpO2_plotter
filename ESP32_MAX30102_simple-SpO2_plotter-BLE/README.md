@@ -24,7 +24,8 @@ works with Sparkfun MAX3010X library
 - Sparkfun's MAX30105 board is supported, use #define MAX30105
 - Heart Rate monitor is displayed on Arduino IDE's serial plotter.
 - https://youtu.be/NfxGxCVRop4
-- 320x240 ILI9341 TFT touch screen display can be used by #define TFT_DISPLAY and #define DEEPSLEEP 
+- 320x240 ILI9341 TFT touch screen display can be used by #define TFT_DISPLAY and #define DEEPSLEEP
+  https://youtu.be/i-jY47I-rwI 
 
 Optional hardwares if you like
 - LED indicator on GPIO_15 , LED connected to GPIO_15 via pull down resister.(3.3kOhm for ex.)
@@ -91,6 +92,8 @@ Fig.3 ESP32 and MH-ET LIVE MAX30102
 
 Fig.4 ESP32 and ILI9341 display with XPT2046 touch screen controller (use #define TFT_DISPLAY and #define DEEPSLEEP with  TFT_eSPI library )
 ![Fig.4 ILI9341 320x240 display](TFTversion.jpg)
+
+https://youtu.be/i-jY47I-rwI 
 
 ### LICENSED under Apache License 2.0
 
