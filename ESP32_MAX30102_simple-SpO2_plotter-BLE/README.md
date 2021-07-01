@@ -40,7 +40,6 @@ Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with X
 -TFT_MISO = GPIO_NUM_19
 -TFT_MOSI = GPIO_NUM_23
 -TFT_SCLK = GPIO_NUM_18
--TFT_LCD = GPIO_NUM_32
 -TFT_CS  = GPIO_NUM_5  // Chip select control pin
 -TFT_DC  = GPIO_NUM_17 // Data Command control pin
 -TFT_RST = GPIO_NUM_16 // Reset pin (could connect to RST pin)
@@ -54,6 +53,8 @@ Use #define TFT_DISPLAY and #define DEEPSLEEP for ILI9341 320x240 display with X
 When this program is running , touch the screen to go to sleep mode. 
 When finger is not on the sensor for 30sec, ESP32 will go to sleep mode.
 It is possible to wakeup ESP32 by touching the screen.
+
+
 
 ## Tips:
 - Used argorithm
@@ -92,6 +93,9 @@ Fig.3 ESP32 and MH-ET LIVE MAX30102
 
 Fig.4 ESP32 and ILI9341 display with XPT2046 touch screen controller (use #define TFT_DISPLAY and #define DEEPSLEEP with  TFT_eSPI library )
 ![Fig.4 ILI9341 320x240 display](TFTversion.jpg)
+
+Fig.5 ESP32 and ILI9341 schematic
+![Fig.5 ESP32 and ILI9341 schematic](schematic.drawio.png)
 
 https://youtu.be/i-jY47I-rwI 
 
