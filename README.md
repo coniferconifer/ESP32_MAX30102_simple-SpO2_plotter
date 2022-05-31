@@ -37,10 +37,11 @@ Fig.3 MH-ET LIVE MAX30102 breakout board
 ![Fig.3 MH-ET LIVE MAX30102 breakout board](MH-ET_LIVE_MAX30102.jpg)
 
 ## Tips:
-- Used argorithm
+- Used algorithm
 
-  DC component of IR and RED data (average) is calculated by digital low pass filter and subtracted from raw data to get AC components.
-  Then, square root means of AC component of RED and IR are calculated for every 100 samples.
+The DC components of IR and RED are obtained by inputting the raw data into a low-pass filter.
+The AC components of IR and RED are calculated by subtracting the DC components from the raw data.
+The square root mean of the AC components of IR and RED is calculated for every 100 samples.
 
 Fig.4 Raw RED signal - DC(low pass filtered RED)  
 ![Fig.4 Raw RED signal - DC(low pass filtered RED) ](MAX30102-REDraw-DC.png)
@@ -53,10 +54,10 @@ Fig.4 Raw RED signal - DC(low pass filtered RED)
   
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-  The last formula is read from the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
-  or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
-  
-  
+ A linear approximation is made by reading values from 0.4 to 1 on the x-axis of the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+This is because a linear approximation of SpO2 from 100 to about 80 is sufficient for practical purposes.
+SpO2 below 80 is a difficult value for survival. 
   
 
 - when IR signal is smaller than 30000 (#define FINGER_ON 30000), then SpO2 becomes 80 to indicate your finger is not on the sensor.
