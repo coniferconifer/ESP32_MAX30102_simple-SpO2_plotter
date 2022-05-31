@@ -57,10 +57,11 @@ It is possible to wakeup ESP32 by touching the screen.
 
 
 ## Tips:
-- Used argorithm
+- Used algorithm
 
-  DC component of IR and RED data (average) is calculated by digital low pass filter and subtracted from raw data to get AC components.
-  Then, square root means of AC component of RED and IR are calculated for every 100 samples.
+The DC components of IR and RED are obtained by inputting the raw data into a low-pass filter.
+The AC components of IR and RED are calculated by subtracting the DC components from the raw data.
+The square root mean of the AC components of IR and RED is calculated for every 100 samples.
 
   SpO2 is calculated as 
 ```  
@@ -68,8 +69,10 @@ It is possible to wakeup ESP32 by touching the screen.
   
   SpO2 = -23.3 * (R - 0.4) + 100
 ```  
-The last formula is read from the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
+A linear approximation is made by reading values from 0.4 to 1 on the x-axis of the graph in https://ww1.microchip.com/downloads/en/Appnotes/00001525B.pdf
 or https://ww1.microchip.com/downloads/jp/AppNotes/00001525B_JP.pdf
+This is because a linear approximation of SpO2 from 100 to about 80 is sufficient for practical purposes.
+A SpO2 below 80 is a difficult value for survival.
   
 
 
