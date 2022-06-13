@@ -199,7 +199,8 @@ void sleepSensor() {
 #define LCD_WIDTH 320
 #define LCD_HIGHT 240
 #define BOTTOM_IR_SIGNAL 85.0
-#define SCALE_FOR_PULSE 20.0
+//#define SCALE_FOR_PULSE 20.0
+#define SCALE_FOR_PULSE 15.0
 #define TEXT_START_X 30
 #define TEXT_START_Y 30
 #define FIGURE_OFFSET_Y 70
@@ -424,8 +425,10 @@ void loop()
 
     if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by decimation
       if ( millis() > TIMETOBOOT) {
-        float ir_forGraph = (2.0 * fir - aveIr) / aveIr * SCALE;
-        float red_forGraph = (2.0 * fred - aveRed) / aveRed * SCALE;
+//        float ir_forGraph = (2.0 * fir - aveIr) / aveIr * SCALE;
+//        float red_forGraph = (2.0 * fred - aveRed) / aveRed * SCALE;
+        float ir_forGraph = 2.0 * (fir - aveIr) / aveIr * SCALE + (MIN_SPO2 + MAX_SPO2) / 2.0;
+        float red_forGraph = 2.0 * (fred - aveRed) / aveRed * SCALE + (MIN_SPO2 + MAX_SPO2) / 2.0;
         //trancation to avoid Serial plotter's autoscaling
         if ( ir_forGraph > MAX_SPO2) ir_forGraph = MAX_SPO2;
         if ( ir_forGraph < MIN_SPO2) ir_forGraph = MIN_SPO2;
