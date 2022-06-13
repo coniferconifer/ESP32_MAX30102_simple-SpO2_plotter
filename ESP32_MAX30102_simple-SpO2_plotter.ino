@@ -108,6 +108,8 @@ double FSpO2 = 0.7; //filter factor for estimated SpO2
 double frate = 0.95; //low pass filter for IR/red LED value to eliminate AC component
 #define TIMETOBOOT 3000 // wait for this time(msec) to output SpO2
 #define SCALE 88.0 //adjust to display heart beat and SpO2 in the same scale
+#define MAX_SPO2 100.0
+#define MIN_SPO2 80.0
 #define SAMPLING 5 //if you want to see heart beat more precisely , set SAMPLING to 1
 #define FINGER_ON 30000 // if red signal is lower than this , it indicates your finger is not on the sensor
 #define MINIMUM_SPO2 80.0
@@ -138,8 +140,10 @@ void loop()
     sumirrms += (fir - aveir) * (fir - aveir);//square sum of alternate component of IR level
     if ((i % SAMPLING) == 0) {//slow down graph plotting speed for arduino Serial plotter by thin out
       if ( millis() > TIMETOBOOT) {
-        float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
-        float red_forGraph = (2.0 * fred - avered) / avered * SCALE;
+//        float ir_forGraph = (2.0 * fir - aveir) / aveir * SCALE;
+//        float red_forGraph = (2.0 * fred - avered) / avered * SCALE;
+        float ir_forGraph = 2.0 * (fir - aveir) / aveir * SCALE + (MIN_SPO2 + MAX_SPO2) / 2.0;
+        float red_forGraph = 2.0 * (fred - avered) / avered * SCALE + (MIN_SPO2 + MAX_SPO2) / 2.0;
         //trancation for Serial plotter's autoscaling
         if ( ir_forGraph > 100.0) ir_forGraph = 100.0;
         if ( ir_forGraph < 80.0) ir_forGraph = 80.0;
